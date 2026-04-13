@@ -1026,8 +1026,9 @@ class _SettingsViewState extends State<SettingsView> {
         List<Map<String, dynamic>> shifts = shiftsData.map((e) => Map<String, dynamic>.from(e)).toList();
         
         List<Map<String, dynamic>> filteredShifts = shifts.where((s) {
+          if (_selectedShiftArea == 'Semua Area') return true; // Show all shifts
           String sArea = s['area'] ?? 'Semua Area';
-          return sArea == _selectedShiftArea;
+          return sArea == _selectedShiftArea || sArea == 'Semua Area';
         }).toList();
 
         var pagiShifts = filteredShifts.where((s) => !s['name'].toString().toLowerCase().contains('malam')).toList();
@@ -1279,7 +1280,32 @@ class _SettingsViewState extends State<SettingsView> {
                       initialValue: ['Pagi', 'Malam', 'Siang', 'General'].contains(name) ? name : 'Pagi',
                       decoration: InputDecoration(filled: true, fillColor: AppColors.slate50, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none)),
                       items: ['Pagi', 'Malam', 'Siang', 'General'].map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold)))).toList(),
-                      onChanged: (v) => setDialogState(() => name = v!),
+                      onChanged: (v) {
+                        setDialogState(() {
+                          name = v!;
+                          // Auto-set default times based on shift category
+                          if (shiftToEdit == null) { // Only auto-set for new shifts
+                            switch (name) {
+                              case 'Pagi':
+                                start = '06:00';
+                                end = '14:00';
+                                break;
+                              case 'Siang':
+                                start = '14:00';
+                                end = '22:00';
+                                break;
+                              case 'Malam':
+                                start = '22:00';
+                                end = '06:00';
+                                break;
+                              case 'General':
+                                start = '08:00';
+                                end = '17:00';
+                                break;
+                            }
+                          }
+                        });
+                      },
                     ),
                     const SizedBox(height: 24),
                     const Text("AREA SHIFT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400, letterSpacing: 1)), const SizedBox(height: 8),

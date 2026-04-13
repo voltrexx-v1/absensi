@@ -57,8 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final FocusNode _passFocusNode = FocusNode();
 
   List<UserModel> _savedAccounts = [];
-  List<String> _availableAreas = ["Site Tabalong (Mabu'un)"];
-  String _selectedArea = "Site Tabalong (Mabu'un)";
+  List<String> _availableAreas = [];
+  String _selectedArea = "";
   
   String _currentDeviceId = '';
 

@@ -1,0 +1,1 @@
+<?php $req = new \Illuminate\Http\Request(); $req->replace(["value" => ["locations" => [], "departemens" => ["TEST"]]]); echo app("App\Http\Controllers\ConfigController")->update($req, "site")->getContent();

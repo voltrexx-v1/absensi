@@ -142,7 +142,7 @@ class _KaryawanViewState extends State<KaryawanView> {
               areaList.sort(
                 (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
               );
-              _areas = areaList;
+              _areas = ['Semua Area', ...areaList];
               if (widget.user.role == 'Head Area') {
                 if (widget.user.area != 'Semua Area' && widget.user.area.isNotEmpty) {
                   _selectedArea = widget.user.area;
@@ -150,10 +150,10 @@ class _KaryawanViewState extends State<KaryawanView> {
                 }
               }
               if (_selectedArea.isEmpty || !_areas.contains(_selectedArea)) {
-                _selectedArea = _areas.isNotEmpty ? _areas.first : '';
+                _selectedArea = 'Semua Area';
               }
-              if (_areas.isNotEmpty && !_areas.contains(_formArea)) {
-                _formArea = _areas.first;
+              if (areaList.isNotEmpty && !areaList.contains(_formArea)) {
+                _formArea = areaList.first;
               }
             }
 
@@ -894,7 +894,7 @@ class _KaryawanViewState extends State<KaryawanView> {
                 List<Map<String, dynamic>> employees = _usersData.where((d) => d['role'] != 'admin').toList();
 
                 // Filter Area
-                if (_selectedArea.isNotEmpty) {
+                if (_selectedArea.isNotEmpty && _selectedArea != 'Semua Area') {
                   employees = employees.where((u) => (u['area'] ?? '') == _selectedArea).toList();
                 }
 

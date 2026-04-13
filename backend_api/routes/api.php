@@ -14,6 +14,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/check-nik', [UserController::class, 'checkNik']);
 Route::post('/check-email', [UserController::class, 'checkEmail']);
+Route::get('/config/{key}', [ConfigController::class, 'show']); // Public: login/register needs areas & dept
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -44,8 +45,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/attendance/all', [AttendanceController::class, 'allRecords']);
     Route::post('/attendance/store', [AttendanceController::class, 'store']);
 
-    // Config
-    Route::get('/config/{key}', [ConfigController::class, 'show']);
     Route::put('/config/{key}', [ConfigController::class, 'update']);
 
     // Requests (Izin/Sakit/Cuti)
