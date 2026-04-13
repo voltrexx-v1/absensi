@@ -1,0 +1,65 @@
+name: flutter_absen_karyawan
+description: "Employee Attendance Application for UT Site Tabalong"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0' 
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  geolocator: ^13.0.2        # Untuk GPS & Deteksi Fake GPS
+  local_auth: ^2.3.0         # Untuk Face ID / Fingerprint
+  flutter_map: ^7.0.2        # Untuk Peta (pengganti Leaflet)
+  latlong2: ^0.9.1           # Untuk koordinat peta
+  intl: ^0.20.2              # Untuk format tanggal & waktu
+  shared_preferences: ^2.3.4 # Untuk session lokal
+  image_picker: ^1.1.2       # Akses kamera
+  camera: ^0.12.0+1            # Pastikan gunakan versi terbaru
+  ntp: ^2.0.0                # Jam sinkron server (anti manipulasi)
+  flutter_launcher_icons: "^0.13.1" # Gunakan versi terbaru
+  path_provider: ^2.1.5      # Untuk akses direktori file
+  share_plus: ^10.1.4        # Untuk share file ke aplikasi lain
+  device_info_plus: ^10.1.0  # Untuk melacak nama asli perangkat (Device Fingerprinting)
+  permission_handler: ^12.0.1
+  file_saver: ^0.3.1
+  geocoding: ^4.0.0
+  google_mlkit_face_detection: ^0.13.2
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+dependency_overrides:
+  collection: 1.19.1
+  http_parser: 4.1.2
+
+flutter:
+  uses-material-design: true
+  assets:
+    - web/UNTR.JK-97580c63.png
+    - Assets/Images/erasebg-transformed.png
+    - Assets/Images/movingasone-2.png
+
+# PASTIKAN BAGIAN INI SEJAJAR DI KIRI (TIDAK ADA SPASI DI AWAL)
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "web/app_icons.png" # Pastikan file gambar Anda ada di web/app_icons.png
+  min_sdk_android: 21 
+  web:
+    generate: true
+    image_path: "web/app_icons.png"
+    background_color: "#1E293B" 
+    theme_color: "#1E293B"
+  windows:
+    generate: true
+    image_path: "web/app_icons.png"
+    icon_size: 48 
+  macos:
+    generate: true
+    image_path: "web/app_icons.png"

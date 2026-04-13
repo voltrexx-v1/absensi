@@ -1,0 +1,4 @@
+{
+    "cmake.ignoreCMakeListsMissing": true,
+    "php.validate.executablePath": "C:\\xampp\\php\\php.exe"
+}

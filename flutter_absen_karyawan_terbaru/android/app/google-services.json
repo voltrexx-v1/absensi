@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "922230765658",
+    "project_id": "absensi-karyawan2",
+    "storage_bucket": "absensi-karyawan2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922230765658:android:1f1c7b7dd145ceeda58063",
+        "android_client_info": {
+          "package_name": "com.example.flutter_absen_karyawan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaCDJn-O6LFEv95MgySANvoXYiz7-c8WA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
