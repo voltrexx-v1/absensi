@@ -657,7 +657,7 @@ class _AttendanceViewState extends State<AttendanceView> {
            var response = await ApiService.verifyFace(File(livenessPath), widget.user.id);
            if (mounted) Navigator.pop(context); // hapus loader
            
-           if (response['success'] == true) {
+           if (response['success'] == true && response['match'] == true) {
               photo = XFile(livenessPath);
            } else {
               if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Verifikasi Wajah Gagal. Wajah tidak sesuai dengan foto profil karyawan!"), backgroundColor: AppColors.rose500));
@@ -1164,18 +1164,36 @@ class _AttendanceViewState extends State<AttendanceView> {
                           urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', 
                           userAgentPackageName: 'com.ut.hrms'
                         ),
-                        CircleLayer(
-                          circles: _locations.where((l) => l['isLocked'] == true && l['lat'] != null).map((loc) => 
-                            CircleMarker(
-                              point: LatLng(loc['lat'], loc['lng']), 
-                              color: AppColors.yellow500.withValues(alpha: 0.2), 
-                              borderStrokeWidth: 2, 
-                              borderColor: AppColors.yellow500, 
-                              useRadiusInMeter: true, 
-                              radius: (loc['radius'] ?? 100).toDouble()
-                            )
-                          ).toList()
-                        ),
+                        if (_status != 'Perjalanan Dinas')
+                          CircleLayer(
+                            circles: _locations.where((l) {
+                              if (l['isLocked'] != true || l['lat'] == null) return false;
+                              
+                              String currentShiftArea = 'semua area';
+                              if (_selectedShiftTimeId != null) {
+                                var sData = _availableShifts.firstWhere(
+                                  (s) => _getShiftVal(s) == _selectedShiftTimeId, 
+                                  orElse: () => <String, dynamic>{}
+                                );
+                                currentShiftArea = sData['area']?.toString().toLowerCase().trim() ?? 'semua area';
+                              }
+
+                              String locArea = l['siteName']?.toString().toLowerCase().trim() ?? '';
+                              if (currentShiftArea != 'semua area' && currentShiftArea.isNotEmpty) {
+                                return locArea == currentShiftArea;
+                              }
+                              return true;
+                            }).map((loc) => 
+                              CircleMarker(
+                                point: LatLng(loc['lat'], loc['lng']), 
+                                color: AppColors.yellow500.withValues(alpha: 0.2), 
+                                borderStrokeWidth: 2, 
+                                borderColor: AppColors.yellow500, 
+                                useRadiusInMeter: true, 
+                                radius: (loc['radius'] ?? 100).toDouble()
+                              )
+                            ).toList()
+                          ),
                         if (_currentPosition != null) MarkerLayer(
                           markers: [Marker(point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude), width: 40, height: 40, child: const Icon(Icons.my_location, color: AppColors.blue500, size: 30))]
                         ),
@@ -1723,7 +1741,7 @@ class _LiveCameraDialogState extends State<LiveCameraDialog> {
      try {
        var response = await ApiService.verifyFace(File(capturedImagePath), widget.userId);
        debugPrint("Verify Face Response: $response");
-       if (response['success'] == true) {
+       if (response['success'] == true && response['match'] == true) {
            return true; 
        } else {
            debugPrint("Verify Face Failed: ${response['message']}");
@@ -1740,7 +1758,7 @@ class _LiveCameraDialogState extends State<LiveCameraDialog> {
      try {
        var response = await ApiService.verifyFaceBytes(bytes, widget.userId);
        debugPrint("Verify Face (Web) Response: $response");
-       if (response['success'] == true) {
+       if (response['success'] == true && response['match'] == true) {
            return true; 
        } else {
            debugPrint("Verify Face Failed: ${response['message']}");

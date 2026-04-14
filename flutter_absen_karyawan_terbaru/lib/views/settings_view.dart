@@ -1241,42 +1241,41 @@ class _SettingsViewState extends State<SettingsView> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (dialogContext, setDialogState) {
             void submitShift() async {
               List<Map<String, dynamic>> updatedShifts = List.from(currentShifts);
               if (shiftToEdit == null) {
-                // Mengecek duplikasi shift di area yang sama
                 bool exists = updatedShifts.any((e) => e['name'] == name && e['area'] == shiftArea);
                 if (exists) {
                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Shift $name sudah ada di area ini!"), backgroundColor: AppColors.rose500));
                    return;
                 }
-                // Menyimpan ke area yang dipilih di dalam dialog
                 updatedShifts.add({'id': 'shift-${DateTime.now().millisecondsSinceEpoch}', 'name': name, 'start': start, 'end': end, 'area': shiftArea});
               } else {
                 int idx = updatedShifts.indexWhere((e) => e['id'] == shiftToEdit['id']);
                 if (idx != -1) { updatedShifts[idx] = {'id': shiftToEdit['id'], 'name': name, 'start': start, 'end': end, 'area': shiftArea}; }
               }
-              showDialog(context: context, builder: (_) => const Center(child: CircularProgressIndicator()));
+
+              // 1) Tutup dialog form shift DULU
+              Navigator.of(dialogContext).pop();
+
+              // 2) Tampilkan loading spinner
+              showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
               
               var currentData = Map<String, dynamic>.from(await ApiService.getConfig('site') ?? {});
               currentData['shifts'] = updatedShifts;
               bool success = await ApiService.updateConfig('site', currentData);
               
-              if (mounted) Navigator.pop(context); // Tutup loading
+              // 3) Tutup loading spinner
+              if (mounted) Navigator.of(context).pop();
               
-              if (success) {
-                 if (mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Shift berhasil disimpan!"), backgroundColor: AppColors.emerald500));
-                   setState(() => _configFuture = _loadConfig());
-                 }
-                 if (mounted) Navigator.pop(context); // Tutup dialog shift
-              } else {
-                 if (mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan shift. Coba lagi."), backgroundColor: AppColors.rose500));
-                 }
+              if (success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Shift berhasil disimpan!"), backgroundColor: AppColors.emerald500));
+                setState(() => _configFuture = _loadConfig());
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan shift. Coba lagi."), backgroundColor: AppColors.rose500));
               }
             }
 
@@ -1302,25 +1301,23 @@ class _SettingsViewState extends State<SettingsView> {
                         setDialogState(() {
                           name = v!;
                           // Auto-set default times based on shift category
-                          if (shiftToEdit == null) { // Only auto-set for new shifts
-                            switch (name) {
-                              case 'Pagi':
-                                start = '06:00';
-                                end = '14:00';
-                                break;
-                              case 'Siang':
-                                start = '14:00';
-                                end = '22:00';
-                                break;
-                              case 'Malam':
-                                start = '22:00';
-                                end = '06:00';
-                                break;
-                              case 'General':
-                                start = '08:00';
-                                end = '17:00';
-                                break;
-                            }
+                          switch (name) {
+                            case 'Pagi':
+                              start = '08:00';
+                              end = '17:00';
+                              break;
+                            case 'Siang':
+                              start = '13:00';
+                              end = '22:00';
+                              break;
+                            case 'Malam':
+                              start = '18:00';
+                              end = '06:00';
+                              break;
+                            case 'General':
+                              start = '08:00';
+                              end = '17:00';
+                              break;
                           }
                         });
                       },
@@ -1395,7 +1392,7 @@ class _SettingsViewState extends State<SettingsView> {
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))),
+                TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.slate900, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                   onPressed: submitShift,
@@ -1448,7 +1445,7 @@ class _SettingsViewState extends State<SettingsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeaderBack("Struktur Organisasi"),
+              _buildHeaderBack("DEPARTEMEN & JABATAN"),
               SizedBox(height: padding),
               _buildStrukturGrouped(strukturOrganisasi),
               const SizedBox(height: 100),
@@ -1618,7 +1615,7 @@ class _SettingsViewState extends State<SettingsView> {
                                         if (confirm == true) {
                                           List<Map<String, dynamic>> updated = List.from(strukturList);
                                           updated.removeWhere((item) => item['departemen'] == depName);
-                                          _saveStrukturToFirestore(updated);
+                                          await _saveStrukturToFirestore(updated);
                                         }
                                       }
                                     ),
@@ -1685,7 +1682,7 @@ class _SettingsViewState extends State<SettingsView> {
                                     if (confirm == true) {
                                       List<Map<String, dynamic>> updated = List.from(strukturList);
                                       updated.removeWhere((item) => item['departemen'] == depName);
-                                      _saveStrukturToFirestore(updated);
+                                      await _saveStrukturToFirestore(updated);
                                     }
                                   }
                                 ),
@@ -1743,7 +1740,7 @@ class _SettingsViewState extends State<SettingsView> {
                                   icon: const Icon(Icons.edit, size: 18, color: AppColors.slate400),
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
-                                  onPressed: () => _showStrukturDialog(origIdx, {'departemen': depName, 'jabatan': jabName}, strukturList)
+                                  onPressed: () => _showStrukturDialog(origIdx, {'departemen': depName, 'jabatan': jabName}, strukturList, lockDepartemen: true)
                                 ),
                                 const SizedBox(width: 16),
                                 IconButton(
@@ -1765,7 +1762,7 @@ class _SettingsViewState extends State<SettingsView> {
                                     if (confirm) {
                                       List<Map<String, dynamic>> updated = List.from(strukturList);
                                       updated.removeAt(origIdx);
-                                      _saveStrukturToFirestore(updated);
+                                      await _saveStrukturToFirestore(updated);
                                     }
                                   }
                                 )
@@ -1793,8 +1790,8 @@ class _SettingsViewState extends State<SettingsView> {
 
     showDialog(
       context: context,
-      builder: (context) {
-        void submitStruktur() {
+      builder: (dialogContext) {
+        void submitStruktur() async {
           if (departemen.trim().isEmpty || jabatan.trim().isEmpty) return;
           FocusManager.instance.primaryFocus?.unfocus(); 
           
@@ -1812,8 +1809,9 @@ class _SettingsViewState extends State<SettingsView> {
             });
           }
 
-          _saveStrukturToFirestore(updatedList);
-          Navigator.pop(context);
+          // Tutup dialog form DULU, baru simpan
+          Navigator.of(dialogContext).pop();
+          await _saveStrukturToFirestore(updatedList);
         }
 
         return AlertDialog(
@@ -1871,7 +1869,7 @@ class _SettingsViewState extends State<SettingsView> {
             TextButton(
               onPressed: () {
                 FocusManager.instance.primaryFocus?.unfocus();
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               }, 
               child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))
             ),
@@ -1892,8 +1890,8 @@ class _SettingsViewState extends State<SettingsView> {
 
     showDialog(
       context: context,
-      builder: (context) {
-        void submitEdit() {
+      builder: (dialogContext) {
+        void submitEdit() async {
           if (newDepName.trim().isEmpty || newDepName.trim() == oldDepName) return;
           FocusManager.instance.primaryFocus?.unfocus();
           
@@ -1904,8 +1902,9 @@ class _SettingsViewState extends State<SettingsView> {
             }
           }
 
-          _saveStrukturToFirestore(updatedList);
-          Navigator.pop(context);
+          // Tutup dialog form DULU, baru simpan
+          Navigator.of(dialogContext).pop();
+          await _saveStrukturToFirestore(updatedList);
         }
 
         return AlertDialog(
@@ -1946,7 +1945,7 @@ class _SettingsViewState extends State<SettingsView> {
             TextButton(
               onPressed: () {
                 FocusManager.instance.primaryFocus?.unfocus();
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               }, 
               child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))
             ),
@@ -1961,19 +1960,34 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
-  void _saveStrukturToFirestore(List<Map<String, dynamic>> strukturList) async {
+  Future<bool> _saveStrukturToFirestore(List<Map<String, dynamic>> strukturList) async {
+    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+
     Set<String> deps = {};
     Set<String> jabs = {};
     
     for(var item in strukturList) {
-      deps.add(item['departemen']);
-      jabs.add(item['jabatan']);
-    }    var currentData = Map<String, dynamic>.from(await ApiService.getConfig('site') ?? {});
+      if (item['departemen'].toString().isNotEmpty) deps.add(item['departemen']);
+      if (item['jabatan'].toString().isNotEmpty) jabs.add(item['jabatan']);
+    }
+
+    var currentData = Map<String, dynamic>.from(await ApiService.getConfig('site') ?? {});
     currentData['struktur_organisasi'] = strukturList;
     currentData['departemens'] = deps.toList();
     currentData['jabatans'] = jabs.toList();
+    
     bool success = await ApiService.updateConfig('site', currentData);
-    if (success && mounted) setState(() => _configFuture = _loadConfig());
+    
+    if (mounted) Navigator.of(context).pop(); // Tutup loading
+    
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Berhasil menyimpan struktur organisasi!"), backgroundColor: AppColors.emerald500));
+      setState(() => _configFuture = _loadConfig());
+    } else if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan struktur."), backgroundColor: AppColors.rose500));
+    }
+    
+    return success;
   }
 
   Widget _buildHeaderBack(String title) {
