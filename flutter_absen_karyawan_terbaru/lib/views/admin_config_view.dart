@@ -96,14 +96,18 @@ class _AdminConfigViewState extends State<AdminConfigView> {
       bool success = await ApiService.updateConfig('site', currentData);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(success ? "✅ Data Lokasi Berhasil Disimpan!" : "Gagal menyimpan konfigurasi."),
+          content: Text(success
+              ? "✅ Data Lokasi Berhasil Disimpan!"
+              : "Gagal menyimpan konfigurasi."),
           backgroundColor: success ? AppColors.emerald500 : AppColors.rose500,
         ));
       }
       setState(() {});
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan konfigurasi."), backgroundColor: AppColors.rose500));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Gagal menyimpan konfigurasi."),
+            backgroundColor: AppColors.rose500));
       }
     } finally {
       setState(() => _isSaving = false);
@@ -115,22 +119,34 @@ class _AdminConfigViewState extends State<AdminConfigView> {
     if (_activeLocationId == null) return;
 
     bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text("Hapus Lokasi?", style: TextStyle(fontWeight: FontWeight.w900)),
-        content: Text("Apakah Anda yakin ingin menghapus '${_activeLocation!['siteName']}'? Aksi ini tidak dapat dibatalkan.", style: const TextStyle(fontWeight: FontWeight.bold)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text("Batal", style: TextStyle(color: AppColors.slate500, fontWeight: FontWeight.bold))),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.rose500, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            onPressed: () => Navigator.pop(c, true),
-            child: const Text("Hapus", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
-          )
-        ]
-      )
-    );
+        context: context,
+        builder: (c) => AlertDialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24)),
+                title: const Text("Hapus Lokasi?",
+                    style: TextStyle(fontWeight: FontWeight.w900)),
+                content: Text(
+                    "Apakah Anda yakin ingin menghapus '${_activeLocation!['siteName']}'? Aksi ini tidak dapat dibatalkan.",
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(c, false),
+                      child: const Text("Batal",
+                          style: TextStyle(
+                              color: AppColors.slate500,
+                              fontWeight: FontWeight.bold))),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.rose500,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12))),
+                      onPressed: () => Navigator.pop(c, true),
+                      child: const Text("Hapus",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)))
+                ]));
 
     if (confirm == true) {
       setState(() {
@@ -143,7 +159,7 @@ class _AdminConfigViewState extends State<AdminConfigView> {
         }
       });
       // Otomatis simpan ke Firestore setelah hapus
-      _saveConfig(); 
+      _saveConfig();
     }
   }
 
@@ -230,14 +246,17 @@ class _AdminConfigViewState extends State<AdminConfigView> {
       );
     }
 
-    bool isMobile = MediaQuery.of(context).size.width < 800; 
+    bool isMobile = MediaQuery.of(context).size.width < 800;
 
     List<Map<String, dynamic>> filteredLocations = _locations.where((loc) {
-      return (loc['siteName'] ?? '').toString().toLowerCase().contains(_searchQuery.toLowerCase());
+      return (loc['siteName'] ?? '')
+          .toString()
+          .toLowerCase()
+          .contains(_searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
-      backgroundColor: Colors.transparent, 
+      backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(isMobile ? 16 : 24),
         child: Column(
@@ -256,13 +275,14 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppColors.slate200),
                     ),
-                    child: Icon(Icons.arrow_back, color: AppColors.slate600, size: isMobile ? 18 : 20),
+                    child: Icon(Icons.arrow_back,
+                        color: AppColors.slate600, size: isMobile ? 18 : 20),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    "PENGATURAN RADAR & LOKASI",
+                    "PENGATURAN RADAR & LOKASI SITE",
                     style: TextStyle(
                       fontSize: isMobile ? 16 : 24,
                       fontWeight: FontWeight.w900,
@@ -277,42 +297,40 @@ class _AdminConfigViewState extends State<AdminConfigView> {
             ),
             const SizedBox(height: 32),
 
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (!isMobile) {
-                  // --- TAMPILAN DESKTOP (Menyamping) ---
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: _buildLeftColumn(filteredLocations, false),
-                      ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        flex: 7,
-                        child: _activeLocation == null 
+            LayoutBuilder(builder: (context, constraints) {
+              if (!isMobile) {
+                // --- TAMPILAN DESKTOP (Menyamping) ---
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: _buildLeftColumn(filteredLocations, false),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      flex: 7,
+                      child: _activeLocation == null
                           ? _buildEmptyState()
                           : _buildDetailPanel(false),
-                      ),
-                    ],
-                  );
-                } else {
-                  // --- TAMPILAN MOBILE (Menurun ke Bawah) ---
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildLeftColumn(filteredLocations, true),
-                      const SizedBox(height: 24),
-                      if (_activeLocation == null) 
-                        _buildEmptyState()
-                      else 
-                        _buildDetailPanel(true),
-                    ],
-                  );
-                }
+                    ),
+                  ],
+                );
+              } else {
+                // --- TAMPILAN MOBILE (Menurun ke Bawah) ---
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildLeftColumn(filteredLocations, true),
+                    const SizedBox(height: 24),
+                    if (_activeLocation == null)
+                      _buildEmptyState()
+                    else
+                      _buildDetailPanel(true),
+                  ],
+                );
               }
-            )
+            })
           ],
         ),
       ),
@@ -334,14 +352,16 @@ class _AdminConfigViewState extends State<AdminConfigView> {
           child: Text(
             "Pilih atau Tambah Site untuk melihat pengaturan.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: AppColors.slate400, fontWeight: FontWeight.bold),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildLeftColumn(List<Map<String, dynamic>> filteredLocations, bool isMobile) {
+  Widget _buildLeftColumn(
+      List<Map<String, dynamic>> filteredLocations, bool isMobile) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 24),
       decoration: BoxDecoration(
@@ -376,13 +396,14 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                     color: AppColors.yellow500,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.add, size: 16, color: AppColors.slate900),
+                  child: const Icon(Icons.add,
+                      size: 16, color: AppColors.slate900),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          
+
           // Search Box
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -396,7 +417,10 @@ class _AdminConfigViewState extends State<AdminConfigView> {
               decoration: const InputDecoration(
                 icon: Icon(Icons.search, size: 18, color: AppColors.slate400),
                 hintText: "Cari lokasi site...",
-                hintStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.slate400),
+                hintStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.slate400),
                 border: InputBorder.none,
               ),
             ),
@@ -421,7 +445,10 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                       decoration: BoxDecoration(
                         color: isActive ? AppColors.yellow50 : Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isActive ? AppColors.yellow500 : AppColors.slate200),
+                        border: Border.all(
+                            color: isActive
+                                ? AppColors.yellow500
+                                : AppColors.slate200),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -431,26 +458,36 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
-                              color: isActive ? AppColors.slate900 : AppColors.slate700,
+                              color: isActive
+                                  ? AppColors.slate900
+                                  : AppColors.slate700,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Row(
                             children: [
                               Icon(
-                                loc['isLocked'] == true ? Icons.check_circle_outline : Icons.error_outline,
+                                loc['isLocked'] == true
+                                    ? Icons.check_circle_outline
+                                    : Icons.error_outline,
                                 size: 14,
-                                color: loc['isLocked'] == true ? AppColors.emerald500 : AppColors.amber500,
+                                color: loc['isLocked'] == true
+                                    ? AppColors.emerald500
+                                    : AppColors.amber500,
                               ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  loc['lat'] != null ? "${loc['lat'].toStringAsFixed(4)}, ${loc['lng'].toStringAsFixed(4)}" : "Belum diatur",
+                                  loc['lat'] != null
+                                      ? "${loc['lat'].toStringAsFixed(4)}, ${loc['lng'].toStringAsFixed(4)}"
+                                      : "Belum diatur",
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'monospace',
-                                    color: loc['lat'] != null ? AppColors.slate500 : AppColors.rose500,
+                                    color: loc['lat'] != null
+                                        ? AppColors.slate500
+                                        : AppColors.rose500,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -509,7 +546,8 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         margin: const EdgeInsets.only(left: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: AppColors.rose50,
                           borderRadius: BorderRadius.circular(16),
@@ -517,10 +555,16 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.rose500),
+                            const Icon(Icons.warning_amber_rounded,
+                                size: 14, color: AppColors.rose500),
                             if (!isMobile) ...[
                               const SizedBox(width: 6),
-                              const Text("RESET LOKASI", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.rose600, letterSpacing: 1)),
+                              const Text("RESET LOKASI",
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.rose600,
+                                      letterSpacing: 1)),
                             ]
                           ],
                         ),
@@ -529,21 +573,35 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                   const SizedBox(width: 8),
                   // TOMBOL HAPUS LOKASI
                   InkWell(
-                    onTap: isLocked ? null : _deleteLocation, // Tidak bisa hapus jika sedang dikunci
+                    onTap: isLocked
+                        ? null
+                        : _deleteLocation, // Tidak bisa hapus jika sedang dikunci
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isLocked ? AppColors.slate100 : AppColors.rose500,
+                        color:
+                            isLocked ? AppColors.slate100 : AppColors.rose500,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.delete_outline, size: 14, color: isLocked ? AppColors.slate400 : Colors.white),
+                          Icon(Icons.delete_outline,
+                              size: 14,
+                              color:
+                                  isLocked ? AppColors.slate400 : Colors.white),
                           if (!isMobile) ...[
                             const SizedBox(width: 6),
-                            Text("HAPUS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: isLocked ? AppColors.slate400 : Colors.white, letterSpacing: 1)),
+                            Text("HAPUS",
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    color: isLocked
+                                        ? AppColors.slate400
+                                        : Colors.white,
+                                    letterSpacing: 1)),
                           ]
                         ],
                       ),
@@ -569,11 +627,13 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                   mapController: _mapController,
                   options: MapOptions(
                     initialCenter: _activeLocation!['lat'] != null
-                        ? LatLng(_activeLocation!['lat'], _activeLocation!['lng'])
+                        ? LatLng(
+                            _activeLocation!['lat'], _activeLocation!['lng'])
                         : const LatLng(-2.164177, 115.387570), // Default
                     initialZoom: 15.0,
                     interactionOptions: InteractionOptions(
-                      flags: isLocked ? InteractiveFlag.none : InteractiveFlag.all,
+                      flags:
+                          isLocked ? InteractiveFlag.none : InteractiveFlag.all,
                     ),
                     onTap: (tapPosition, point) {
                       if (!isLocked) {
@@ -584,83 +644,120 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                      urlTemplate:
+                          'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                       userAgentPackageName: 'com.ut.hrms',
                     ),
                     if (_activeLocation!['lat'] != null) ...[
                       CircleLayer(
                         circles: [
                           CircleMarker(
-                            point: LatLng(_activeLocation!['lat'], _activeLocation!['lng']),
+                            point: LatLng(_activeLocation!['lat'],
+                                _activeLocation!['lng']),
                             color: AppColors.yellow500.withValues(alpha: 0.15),
                             borderColor: AppColors.yellow500,
                             borderStrokeWidth: 2,
                             useRadiusInMeter: true,
-                            radius: (_activeLocation!['radius'] ?? 100).toDouble(),
+                            radius:
+                                (_activeLocation!['radius'] ?? 100).toDouble(),
                           ),
                         ],
                       ),
                       MarkerLayer(
                         markers: [
                           Marker(
-                            point: LatLng(_activeLocation!['lat'], _activeLocation!['lng']),
+                            point: LatLng(_activeLocation!['lat'],
+                                _activeLocation!['lng']),
                             width: 40,
                             height: 40,
-                            child: const Icon(Icons.location_on, color: AppColors.rose500, size: 40),
+                            child: const Icon(Icons.location_on,
+                                color: AppColors.rose500, size: 40),
                           ),
                         ],
                       ),
                     ],
                   ],
                 ),
-                
+
                 // Gunakan GPS Button (Floating di atas peta jika tidak dikunci)
                 if (!isLocked)
                   Positioned(
-                    bottom: 16,
-                    right: 16,
-                    child: FloatingActionButton.extended(
-                      onPressed: _getMyGPS,
-                      backgroundColor: AppColors.slate900,
-                      icon: const Icon(Icons.my_location, color: Colors.white, size: 18),
-                      label: const Text("Gunakan GPS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
-                    )
-                  )
+                      bottom: 16,
+                      right: 16,
+                      child: FloatingActionButton.extended(
+                        onPressed: _getMyGPS,
+                        backgroundColor: AppColors.slate900,
+                        icon: const Icon(Icons.my_location,
+                            color: Colors.white, size: 18),
+                        label: const Text("Gunakan GPS",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10)),
+                      ))
               ],
             ),
           ),
           const SizedBox(height: 32),
 
           // FORM INPUT BAWAH
-          const Text("NAMA LOKASI SITE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400, letterSpacing: 1)),
+          const Text("NAMA LOKASI SITE",
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.slate400,
+                  letterSpacing: 1)),
           const SizedBox(height: 8),
           TextField(
-            controller: TextEditingController(text: _activeLocation!['siteName'])..selection = TextSelection.collapsed(offset: (_activeLocation!['siteName'] ?? '').length),
+            controller:
+                TextEditingController(text: _activeLocation!['siteName'])
+                  ..selection = TextSelection.collapsed(
+                      offset: (_activeLocation!['siteName'] ?? '').length),
             onChanged: (val) => _updateActiveLocation('siteName', val),
             enabled: !isLocked,
-            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.slate800, fontSize: 14),
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.slate800,
+                fontSize: 14),
             decoration: InputDecoration(
               filled: true,
               fillColor: isLocked ? AppColors.slate50 : Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.yellow500, width: 2)),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: AppColors.slate200)),
+              enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: AppColors.slate200)),
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide:
+                      const BorderSide(color: AppColors.yellow500, width: 2)),
             ),
           ),
           const SizedBox(height: 24),
 
           // KOLOM KOORDINAT YANG BISA DIEDIT (TextField)
           isMobile
-            ? Column(
-                children: [
+              ? Column(children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("LATITUD", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400, letterSpacing: 1)),
+                      const Text("LATITUD",
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.slate400,
+                              letterSpacing: 1)),
                       const SizedBox(height: 8),
                       TextField(
-                        controller: TextEditingController(text: _activeLocation!['lat']?.toString() ?? '')..selection = TextSelection.collapsed(offset: (_activeLocation!['lat']?.toString() ?? '').length),
+                        controller: TextEditingController(
+                            text: _activeLocation!['lat']?.toString() ?? '')
+                          ..selection = TextSelection.collapsed(
+                              offset:
+                                  (_activeLocation!['lat']?.toString() ?? '')
+                                      .length),
                         onChanged: (val) {
                           double? parsed = double.tryParse(val);
                           if (parsed != null) {
@@ -668,16 +765,31 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                           }
                         },
                         enabled: !isLocked,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.slate600, fontFamily: 'monospace'),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true, signed: true),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.slate600,
+                            fontFamily: 'monospace'),
                         decoration: InputDecoration(
                           hintText: "Contoh: -2.1774",
                           filled: true,
-                          fillColor: isLocked ? AppColors.slate50 : Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.yellow500, width: 2)),
+                          fillColor:
+                              isLocked ? AppColors.slate50 : Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 16),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide:
+                                  const BorderSide(color: AppColors.slate200)),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide:
+                                  const BorderSide(color: AppColors.slate200)),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                  color: AppColors.yellow500, width: 2)),
                         ),
                       ),
                     ],
@@ -686,10 +798,20 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("LONGITUD", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400, letterSpacing: 1)),
+                      const Text("LONGITUD",
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.slate400,
+                              letterSpacing: 1)),
                       const SizedBox(height: 8),
                       TextField(
-                        controller: TextEditingController(text: _activeLocation!['lng']?.toString() ?? '')..selection = TextSelection.collapsed(offset: (_activeLocation!['lng']?.toString() ?? '').length),
+                        controller: TextEditingController(
+                            text: _activeLocation!['lng']?.toString() ?? '')
+                          ..selection = TextSelection.collapsed(
+                              offset:
+                                  (_activeLocation!['lng']?.toString() ?? '')
+                                      .length),
                         onChanged: (val) {
                           double? parsed = double.tryParse(val);
                           if (parsed != null) {
@@ -697,87 +819,153 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                           }
                         },
                         enabled: !isLocked,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.slate600, fontFamily: 'monospace'),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true, signed: true),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.slate600,
+                            fontFamily: 'monospace'),
                         decoration: InputDecoration(
                           hintText: "Contoh: 115.4225",
                           filled: true,
-                          fillColor: isLocked ? AppColors.slate50 : Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.yellow500, width: 2)),
+                          fillColor:
+                              isLocked ? AppColors.slate50 : Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 16),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide:
+                                  const BorderSide(color: AppColors.slate200)),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide:
+                                  const BorderSide(color: AppColors.slate200)),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                  color: AppColors.yellow500, width: 2)),
                         ),
                       ),
                     ],
                   ),
-                ]
-              )
-            : Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("LATITUD", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400, letterSpacing: 1)),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: TextEditingController(text: _activeLocation!['lat']?.toString() ?? '')..selection = TextSelection.collapsed(offset: (_activeLocation!['lat']?.toString() ?? '').length),
-                          onChanged: (val) {
-                            double? parsed = double.tryParse(val);
-                            if (parsed != null) {
-                              _updateActiveLocation('lat', parsed);
-                            }
-                          },
-                          enabled: !isLocked,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.slate600, fontFamily: 'monospace'),
-                          decoration: InputDecoration(
-                            hintText: "Contoh: -2.1774",
-                            filled: true,
-                            fillColor: isLocked ? AppColors.slate50 : Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.yellow500, width: 2)),
+                ])
+              : Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("LATITUD",
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.slate400,
+                                  letterSpacing: 1)),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: TextEditingController(
+                                text: _activeLocation!['lat']?.toString() ?? '')
+                              ..selection = TextSelection.collapsed(
+                                  offset:
+                                      (_activeLocation!['lat']?.toString() ??
+                                              '')
+                                          .length),
+                            onChanged: (val) {
+                              double? parsed = double.tryParse(val);
+                              if (parsed != null) {
+                                _updateActiveLocation('lat', parsed);
+                              }
+                            },
+                            enabled: !isLocked,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true, signed: true),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.slate600,
+                                fontFamily: 'monospace'),
+                            decoration: InputDecoration(
+                              hintText: "Contoh: -2.1774",
+                              filled: true,
+                              fillColor:
+                                  isLocked ? AppColors.slate50 : Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 16),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.slate200)),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.slate200)),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.yellow500, width: 2)),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("LONGITUD", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400, letterSpacing: 1)),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: TextEditingController(text: _activeLocation!['lng']?.toString() ?? '')..selection = TextSelection.collapsed(offset: (_activeLocation!['lng']?.toString() ?? '').length),
-                          onChanged: (val) {
-                            double? parsed = double.tryParse(val);
-                            if (parsed != null) {
-                              _updateActiveLocation('lng', parsed);
-                            }
-                          },
-                          enabled: !isLocked,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.slate600, fontFamily: 'monospace'),
-                          decoration: InputDecoration(
-                            hintText: "Contoh: 115.4225",
-                            filled: true,
-                            fillColor: isLocked ? AppColors.slate50 : Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.slate200)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.yellow500, width: 2)),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("LONGITUD",
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.slate400,
+                                  letterSpacing: 1)),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: TextEditingController(
+                                text: _activeLocation!['lng']?.toString() ?? '')
+                              ..selection = TextSelection.collapsed(
+                                  offset:
+                                      (_activeLocation!['lng']?.toString() ??
+                                              '')
+                                          .length),
+                            onChanged: (val) {
+                              double? parsed = double.tryParse(val);
+                              if (parsed != null) {
+                                _updateActiveLocation('lng', parsed);
+                              }
+                            },
+                            enabled: !isLocked,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true, signed: true),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.slate600,
+                                fontFamily: 'monospace'),
+                            decoration: InputDecoration(
+                              hintText: "Contoh: 115.4225",
+                              filled: true,
+                              fillColor:
+                                  isLocked ? AppColors.slate50 : Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 16),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.slate200)),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.slate200)),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.yellow500, width: 2)),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
           const SizedBox(height: 24),
 
           // FITUR BARU: TOMBOL WFH (TOGGLE BEBAS RADIUS)
@@ -786,17 +974,30 @@ class _AdminConfigViewState extends State<AdminConfigView> {
             children: [
               Text(
                 "JARI-JARI (RADIUS): ${_activeLocation!['radius']?.toInt() ?? 100}M",
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400, letterSpacing: 1),
+                style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.slate400,
+                    letterSpacing: 1),
               ),
               Row(
                 children: [
-                  Icon(Icons.home_work, size: 14, color: isWfh ? AppColors.blue500 : AppColors.slate400),
+                  Icon(Icons.home_work,
+                      size: 14,
+                      color: isWfh ? AppColors.blue500 : AppColors.slate400),
                   const SizedBox(width: 6),
-                  Text("MODE WFH", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: isWfh ? AppColors.blue500 : AppColors.slate400, letterSpacing: 1)),
+                  Text("MODE WFH",
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: isWfh ? AppColors.blue500 : AppColors.slate400,
+                          letterSpacing: 1)),
                   const SizedBox(width: 4),
                   Switch(
                     value: isWfh,
-                    onChanged: isLocked ? null : (val) => _updateActiveLocation('isWfhMode', val),
+                    onChanged: isLocked
+                        ? null
+                        : (val) => _updateActiveLocation('isWfhMode', val),
                     activeThumbColor: AppColors.blue500,
                   ),
                 ],
@@ -805,11 +1006,15 @@ class _AdminConfigViewState extends State<AdminConfigView> {
           ),
           Slider(
             value: (_activeLocation!['radius'] ?? 100).toDouble(),
-            min: 30, max: 500, divisions: 470,
+            min: 30,
+            max: 500,
+            divisions: 470,
             activeColor: AppColors.yellow500,
             inactiveColor: AppColors.slate200,
             thumbColor: AppColors.slate800,
-            onChanged: isLocked ? null : (val) => _updateActiveLocation('radius', val.toInt()),
+            onChanged: isLocked
+                ? null
+                : (val) => _updateActiveLocation('radius', val.toInt()),
           ),
           const SizedBox(height: 32),
 
@@ -822,30 +1027,46 @@ class _AdminConfigViewState extends State<AdminConfigView> {
                     decoration: BoxDecoration(
                       color: AppColors.slate50,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.slate200, style: BorderStyle.solid, width: 2),
+                      border: Border.all(
+                          color: AppColors.slate200,
+                          style: BorderStyle.solid,
+                          width: 2),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
                         Icon(Icons.shield, color: AppColors.slate400, size: 18),
                         SizedBox(width: 8),
-                        Text("KOORDINAT SITE DIKUNCI", style: TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                        Text("KOORDINAT SITE DIKUNCI",
+                            style: TextStyle(
+                                color: AppColors.slate500,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1)),
                       ],
                     ),
                   )
                 : ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.yellow500,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
                     onPressed: _isSaving ? null : _saveConfig,
                     icon: _isSaving
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.slate900, strokeWidth: 2))
-                        : const Icon(Icons.lock_outline, color: AppColors.slate900, size: 20),
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                color: AppColors.slate900, strokeWidth: 2))
+                        : const Icon(Icons.lock_outline,
+                            color: AppColors.slate900, size: 20),
                     label: Text(
                       _isSaving ? "MENYIMPAN..." : "KUNCI & SIMPAN",
-                      style: const TextStyle(color: AppColors.slate900, fontWeight: FontWeight.w900, letterSpacing: 1),
+                      style: const TextStyle(
+                          color: AppColors.slate900,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1),
                     ),
                   ),
           ),

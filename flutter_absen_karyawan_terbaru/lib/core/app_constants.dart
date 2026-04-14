@@ -38,7 +38,9 @@ class AppColors {
   static const Color emerald50 = Color(0xFFECFDF5);
 
   // Blue Colors
+  static const Color blue600 = Color(0xFF2563EB);
   static const Color blue500 = Color(0xFF3B82F6);
+  static const Color blue200 = Color(0xFFBFDBFE);
   static const Color blue50 = Color(0xFFEFF6FF);
 
   // Indigo Colors

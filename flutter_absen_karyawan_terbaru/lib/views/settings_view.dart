@@ -600,7 +600,10 @@ class _SettingsViewState extends State<SettingsView> {
         children: [
           Text("PENGATURAN SISTEM", style: TextStyle(fontSize: isMobile ? 22 : 28, fontWeight: FontWeight.w900, color: AppColors.slate900, letterSpacing: -0.5)),
           SizedBox(height: isMobile ? 24 : 32),
-          _buildMenuCard(title: "Radar & Lokasi Site", subtitle: "Konfigurasi titik pusat GPS, radius absensi, dan area.", icon: Icons.location_on, onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminConfigView())); }),
+          _buildMenuCard(title: "Radar & Lokasi Site", subtitle: "Konfigurasi titik pusat GPS, radius absensi, dan area.", icon: Icons.location_on, onTap: () async { 
+            await Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminConfigView())); 
+            if (mounted) setState(() { _configFuture = _loadConfig(); });
+          }),
           const SizedBox(height: 16),
           _buildMenuCard(title: "Pengaturan Shift (Waktu)", subtitle: "Kelola aturan jam masuk dan jam pulang untuk setiap site.", icon: Icons.timer, onTap: () => setState(() => _activeSetting = 'shift')),
           const SizedBox(height: 16),
@@ -1159,7 +1162,22 @@ class _SettingsViewState extends State<SettingsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(s['name'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: AppColors.slate800)),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(s['name'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: AppColors.slate800), overflow: TextOverflow.ellipsis),
+                    ),
+                    if (s['area'] != null && s['area'].toString().isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(color: AppColors.blue50, borderRadius: BorderRadius.circular(6), border: Border.all(color: AppColors.blue200)),
+                        child: Text(s['area'].toString().toUpperCase(), style: const TextStyle(color: AppColors.blue600, fontSize: 9, fontWeight: FontWeight.w900)),
+                      ),
+                    ]
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [

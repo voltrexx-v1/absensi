@@ -657,13 +657,11 @@ class _AttendanceViewState extends State<AttendanceView> {
            var response = await ApiService.verifyFace(File(livenessPath), widget.user.id);
            if (mounted) Navigator.pop(context); // hapus loader
            
-           if (true) { // Temporary override of verifyFace status parsing due to varying return types
-           // if (response['success'] == true) {
+           if (response['success'] == true) {
               photo = XFile(livenessPath);
-           // } else {
-           //    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Verifikasi Wajah Gagal. Pastikan wajah cocok!"), backgroundColor: AppColors.rose500));
-           //    return;
-           // }
+           } else {
+              if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Verifikasi Wajah Gagal. Wajah tidak sesuai dengan foto profil karyawan!"), backgroundColor: AppColors.rose500));
+              return;
            }
         }
       }
