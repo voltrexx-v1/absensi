@@ -844,9 +844,13 @@ class _SettingsViewState extends State<SettingsView> {
                             
                             String mobileId = userData['mobileDeviceId'] ?? '';
                             String desktopId = userData['desktopDeviceId'] ?? '';
+                            if (userData['device'] != null) {
+                               mobileId = userData['device']['mobileDeviceId'] ?? mobileId;
+                               desktopId = userData['device']['desktopDeviceId'] ?? desktopId;
+                            }
                             
-                            if (mobileId.isEmpty && desktopId.isEmpty && userData.containsKey('deviceId') && userData['deviceId'].toString().isNotEmpty) {
-                               mobileId = userData['deviceId']; 
+                            if (mobileId.isEmpty && desktopId.isEmpty && userData.containsKey('device_id') && userData['device_id'] != null) {
+                               mobileId = userData['device_id'].toString(); 
                             }
 
                             bool isMobileBound = mobileId.isNotEmpty;
@@ -986,11 +990,9 @@ class _SettingsViewState extends State<SettingsView> {
 
      if (confirm == true) {
         try {
-           await ApiService.updateUser(docId, {
-             fieldName: '',
-             'deviceId': '', 
-           });
+           await ApiService.resetDevice(docId, field: fieldName);
            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Perangkat $deviceType berhasil di-reset!"), backgroundColor: AppColors.emerald500));
+           setState(() {}); // Refresh UI
         } catch (e) {
            if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal reset perangkat."), backgroundColor: AppColors.rose500));
         }
@@ -1478,10 +1480,13 @@ class _SettingsViewState extends State<SettingsView> {
       if (!groupedData.containsKey(dep)) {
         groupedData[dep] = [];
       }
-      groupedData[dep]!.add({
-        'originalIndex': i,
-        'jabatan': strukturList[i]['jabatan'].toString(),
-      });
+      String jab = strukturList[i]['jabatan'].toString();
+      if (jab.isNotEmpty) {
+        groupedData[dep]!.add({
+          'originalIndex': i,
+          'jabatan': jab,
+        });
+      }
     }
 
     // URUTKAN DAFTAR DEPARTEMEN DARI A - Z
@@ -1721,6 +1726,12 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
 
                   // --- LIST JABATAN DI BAWAH DEPARTEMEN ---
+                  if (jabs.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text("Belum ada jabatan di departemen ini", style: TextStyle(color: AppColors.slate400, fontStyle: FontStyle.italic)),
+                    )
+                  else
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -1773,7 +1784,14 @@ class _SettingsViewState extends State<SettingsView> {
                                     );
                                     if (confirm) {
                                       List<Map<String, dynamic>> updated = List.from(strukturList);
-                                      updated.removeAt(origIdx);
+                                      int count = updated.where((item) => item['departemen'] == depName).length;
+                                      if (count <= 1) {
+                                        // Jika INI adalah jabatan terakhir, jangan hapus departemen-nya
+                                        int index = updated.indexWhere((item) => item == strukturList[origIdx]);
+                                        updated[index] = {'departemen': depName, 'jabatan': ''};
+                                      } else {
+                                        updated.removeAt(origIdx);
+                                      }
                                       await _saveStrukturOrganisasi(updated);
                                     }
                                   }

@@ -635,8 +635,21 @@ class _LoginScreenState extends State<LoginScreen> {
     // Semua login kini melalui Laravel API (bypass dihapus)
 
     try {
-      UserModel? apiUser = await ApiService.login(id, pass);
-      if (apiUser != null) {
+      bool isDesktopDevice = false;
+      if (kIsWeb) {
+        isDesktopDevice = MediaQuery.of(context).size.width >= 900;
+      } else {
+        isDesktopDevice = Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+      }
+
+      var loginResult = await ApiService.login(
+        id, pass,
+        mobileDeviceId: isDesktopDevice ? '' : _currentDeviceId,
+        desktopDeviceId: isDesktopDevice ? _currentDeviceId : '',
+      );
+
+      if (loginResult['success'] == true) {
+        UserModel apiUser = loginResult['user'];
         // Check role alignment
         if ((_mode == 'karyawan' && apiUser.role != 'Karyawan') ||
             (_mode == 'head' && apiUser.role != 'IT') ||
@@ -668,7 +681,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _directLogin(user);
       } else {
         setState(
-            () => _errorMsg = "NRP/ID tidak ditemukan atau password salah.");
+            () => _errorMsg = loginResult['message']?.toString() ?? "NRP/ID tidak ditemukan atau password salah.");
       }
     } catch (e) {
       setState(() => _errorMsg = "Kesalahan koneksi jaringan.");

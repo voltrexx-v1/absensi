@@ -58,20 +58,24 @@ class ApiService {
   }
 
   // ========== AUTH ==========
-  static Future<UserModel?> login(String nik, String password) async {
+  static Future<Map<String, dynamic>> login(String nik, String password, {String? mobileDeviceId, String? desktopDeviceId}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-      body: jsonEncode({'nik': nik, 'password': password}),
+      body: jsonEncode({
+        'nik': nik, 
+        'password': password,
+        'mobileDeviceId': mobileDeviceId,
+        'desktopDeviceId': desktopDeviceId,
+      }),
     );
+    final data = jsonDecode(response.body);
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token']);
-      return UserModel.fromJson(data['user']);
+      return {'success': true, 'user': UserModel.fromJson(data['user'])};
     }
-    print('Login failed: ${response.statusCode} - ${response.body}');
-    return null;
+    return {'success': false, 'message': data['message'] ?? 'Login failed: ${response.statusCode}'};
   }
 
   static Future<Map<String, dynamic>> register(Map<String, dynamic> payload) async {

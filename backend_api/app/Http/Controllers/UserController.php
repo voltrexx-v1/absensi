@@ -91,6 +91,8 @@ class UserController extends Controller
              }
         }
         
+        $user->update(['device_id' => null]);
+        
         return response()->json(['message' => 'Device direset', 'data' => $user->fresh()]);
     }
 

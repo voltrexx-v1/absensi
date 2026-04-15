@@ -126,11 +126,13 @@ class ConfigController extends Controller
                           if (isset($value['struktur_organisasi'])) {
                               foreach($value['struktur_organisasi'] as $struktur) {
                                   if ($struktur['departemen'] === $dep) {
-                                      $validJabatans[] = $struktur['jabatan'];
-                                      Jabatan::firstOrCreate([
-                                          'departemen_id' => $d->id,
-                                          'nama_jabatan' => $struktur['jabatan']
-                                      ]);
+                                      if (!empty($struktur['jabatan'])) {
+                                          $validJabatans[] = $struktur['jabatan'];
+                                          Jabatan::firstOrCreate([
+                                              'departemen_id' => $d->id,
+                                              'nama_jabatan' => $struktur['jabatan']
+                                          ]);
+                                      }
                                   }
                               }
                           }

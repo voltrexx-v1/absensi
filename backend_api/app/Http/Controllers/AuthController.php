@@ -14,18 +14,37 @@ class AuthController extends Controller
         $request->validate(['nik' => 'required', 'password' => 'required']);
         $user = User::where('nik', $request->nik)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'NRP/ID atau password salah'], 401);
-        }
+        $reqMobile = $request->mobileDeviceId;
+        $reqDesktop = $request->desktopDeviceId;
 
-        // If the user sends new device IDs and they don't have a device stored yet, register it.
-        // Actually, the Flutter validates it. We just update if not exist.
-        if (!$user->device && ($request->mobileDeviceId || $request->desktopDeviceId)) {
-             $user->device()->create([
-                 'id' => Str::uuid()->toString(),
-                 'mobileDeviceId' => $request->mobileDeviceId,
-                 'desktopDeviceId' => $request->desktopDeviceId
-             ]);
+        if ($user->role !== 'admin') {
+             $device = $user->device;
+             
+             if ($device) {
+                 if ($reqMobile) {
+                      if ($device->mobileDeviceId && $device->mobileDeviceId !== $reqMobile) {
+                          return response()->json(['message' => 'Perangkat Handphone Anda tidak dikenali. Silakan hubungi Admin melalui Pusat Bantuan untuk mereset perangkat.'], 403);
+                      } else if (!$device->mobileDeviceId) {
+                          $device->update(['mobileDeviceId' => $reqMobile]);
+                      }
+                 }
+                 
+                 if ($reqDesktop) {
+                      if ($device->desktopDeviceId && $device->desktopDeviceId !== $reqDesktop) {
+                          return response()->json(['message' => 'Perangkat Desktop (PC) Anda tidak dikenali. Silakan hubungi Admin melalui Pusat Bantuan untuk mereset perangkat.'], 403);
+                      } else if (!$device->desktopDeviceId) {
+                          $device->update(['desktopDeviceId' => $reqDesktop]);
+                      }
+                 }
+             } else {
+                 if ($reqMobile || $reqDesktop) {
+                     $user->device()->create([
+                         'id' => Str::uuid()->toString(),
+                         'mobileDeviceId' => $reqMobile,
+                         'desktopDeviceId' => $reqDesktop
+                     ]);
+                 }
+             }
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
