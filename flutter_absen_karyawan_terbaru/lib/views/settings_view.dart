@@ -1278,12 +1278,12 @@ class _SettingsViewState extends State<SettingsView> {
               currentData['shifts'] = updatedShifts;
               bool success = await ApiService.updateConfig('site', currentData);
               
-              setDialogState(() => isSubmittingShift = false);
-              
               if (success && mounted) {
+                Navigator.of(dialogContext).pop();
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Shift berhasil disimpan!"), backgroundColor: AppColors.emerald500));
                 setState(() => _configRefreshKey++);
               } else if (mounted) {
+                setDialogState(() => isSubmittingShift = false);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan shift. Coba lagi."), backgroundColor: AppColors.rose500));
               }
             }
@@ -1827,8 +1827,12 @@ class _SettingsViewState extends State<SettingsView> {
             });
           }
 
-          await _saveStrukturOrganisasi(updatedList);
-          if (mounted) setDialogState(() => isSubmittingStruktur = false);
+          bool success = await _saveStrukturOrganisasi(updatedList);
+          if (success && mounted) {
+            Navigator.of(dialogContext).pop();
+          } else if (mounted) {
+            setDialogState(() => isSubmittingStruktur = false);
+          }
         }
 
         return AlertDialog(
@@ -1929,8 +1933,12 @@ class _SettingsViewState extends State<SettingsView> {
             }
           }
 
-          await _saveStrukturOrganisasi(updatedList);
-          if (mounted) setDialogState(() => isSubmittingEdit = false);
+          bool success = await _saveStrukturOrganisasi(updatedList);
+          if (success && mounted) {
+            Navigator.of(dialogContext).pop();
+          } else if (mounted) {
+            setDialogState(() => isSubmittingEdit = false);
+          }
         }
 
         return AlertDialog(
