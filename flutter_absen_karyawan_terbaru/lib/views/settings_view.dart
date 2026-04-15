@@ -39,9 +39,11 @@ class _SettingsViewState extends State<SettingsView> {
   final List<String> _ringtones = ['Default', 'Chime', 'Beep', 'Bell', 'Percussive', 'Sirene'];
 
   late Future<Map<String, dynamic>?> _configFuture;
+  int _configRefreshKey = 0;
 
   Future<Map<String, dynamic>?> _loadConfig() async {
-    var data = await ApiService.getConfig('site');
+    // Tambahkan timestamp anti-cache agar browser (Chrome) tidak menyimpan data lama
+    var data = await ApiService.getConfig('site?t=${DateTime.now().millisecondsSinceEpoch}');
     return data != null ? Map<String, dynamic>.from(data) : null;
   }
 
@@ -1000,7 +1002,8 @@ class _SettingsViewState extends State<SettingsView> {
     double padding = isMobile ? 16 : 32;
 
     return FutureBuilder<Map<String, dynamic>?>(
-      future: _configFuture,
+      key: ValueKey('shift_$_configRefreshKey'),
+      future: _loadConfig(),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Center(child: Padding(padding: EdgeInsets.all(padding), child: const Text("Terjadi kesalahan memuat data konfigurasi", style: TextStyle(color: AppColors.rose500))));
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -1221,7 +1224,14 @@ class _SettingsViewState extends State<SettingsView> {
                     var currentData = Map<String, dynamic>.from(await ApiService.getConfig('site') ?? {});
                     currentData['shifts'] = updated;
                     bool success = await ApiService.updateConfig('site', currentData);
-                    if (success && mounted) setState(() => _configFuture = _loadConfig());
+                    if (mounted) {
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Shift berhasil dihapus!"), backgroundColor: AppColors.emerald500));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menghapus shift."), backgroundColor: AppColors.rose500));
+                      }
+                      setState(() => _configRefreshKey++);
+                    }
                   }
                 },
               ),
@@ -1244,12 +1254,18 @@ class _SettingsViewState extends State<SettingsView> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
+            bool isSubmittingShift = false;
+
             void submitShift() async {
+              if (isSubmittingShift) return;
+              setDialogState(() => isSubmittingShift = true);
+
               List<Map<String, dynamic>> updatedShifts = List.from(currentShifts);
               if (shiftToEdit == null) {
                 bool exists = updatedShifts.any((e) => e['name'] == name && e['area'] == shiftArea);
                 if (exists) {
                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Shift $name sudah ada di area ini!"), backgroundColor: AppColors.rose500));
+                   setDialogState(() => isSubmittingShift = false);
                    return;
                 }
                 updatedShifts.add({'id': 'shift-${DateTime.now().millisecondsSinceEpoch}', 'name': name, 'start': start, 'end': end, 'area': shiftArea});
@@ -1258,22 +1274,15 @@ class _SettingsViewState extends State<SettingsView> {
                 if (idx != -1) { updatedShifts[idx] = {'id': shiftToEdit['id'], 'name': name, 'start': start, 'end': end, 'area': shiftArea}; }
               }
 
-              // 1) Tutup dialog form shift DULU
-              Navigator.of(dialogContext).pop();
-
-              // 2) Tampilkan loading spinner
-              showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
-              
-              var currentData = Map<String, dynamic>.from(await ApiService.getConfig('site') ?? {});
+              var currentData = Map<String, dynamic>.from(await ApiService.getConfig('site?t=${DateTime.now().millisecondsSinceEpoch}') ?? {});
               currentData['shifts'] = updatedShifts;
               bool success = await ApiService.updateConfig('site', currentData);
               
-              // 3) Tutup loading spinner
-              if (mounted) Navigator.of(context).pop();
+              setDialogState(() => isSubmittingShift = false);
               
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Shift berhasil disimpan!"), backgroundColor: AppColors.emerald500));
-                setState(() => _configFuture = _loadConfig());
+                setState(() => _configRefreshKey++);
               } else if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan shift. Coba lagi."), backgroundColor: AppColors.rose500));
               }
@@ -1392,11 +1401,13 @@ class _SettingsViewState extends State<SettingsView> {
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))),
+                TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Tutup", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.slate900, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                  onPressed: submitShift,
-                  child: const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  onPressed: isSubmittingShift ? null : submitShift,
+                  child: isSubmittingShift
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ],
             );
@@ -1411,7 +1422,8 @@ class _SettingsViewState extends State<SettingsView> {
     double padding = isMobile ? 16 : 32;
 
     return FutureBuilder<Map<String, dynamic>?>(
-      future: _configFuture,
+      key: ValueKey('dept_$_configRefreshKey'),
+      future: _loadConfig(),
       builder: (context, snapshot) {
         
         if (snapshot.hasError) return Center(child: Padding(padding: EdgeInsets.all(padding), child: const Text("Terjadi kesalahan memuat data", style: TextStyle(color: AppColors.emerald500))));
@@ -1615,7 +1627,7 @@ class _SettingsViewState extends State<SettingsView> {
                                         if (confirm == true) {
                                           List<Map<String, dynamic>> updated = List.from(strukturList);
                                           updated.removeWhere((item) => item['departemen'] == depName);
-                                          await _saveStrukturToFirestore(updated);
+                                          await _saveStrukturOrganisasi(updated);
                                         }
                                       }
                                     ),
@@ -1682,7 +1694,7 @@ class _SettingsViewState extends State<SettingsView> {
                                     if (confirm == true) {
                                       List<Map<String, dynamic>> updated = List.from(strukturList);
                                       updated.removeWhere((item) => item['departemen'] == depName);
-                                      await _saveStrukturToFirestore(updated);
+                                      await _saveStrukturOrganisasi(updated);
                                     }
                                   }
                                 ),
@@ -1762,7 +1774,7 @@ class _SettingsViewState extends State<SettingsView> {
                                     if (confirm) {
                                       List<Map<String, dynamic>> updated = List.from(strukturList);
                                       updated.removeAt(origIdx);
-                                      await _saveStrukturToFirestore(updated);
+                                      await _saveStrukturOrganisasi(updated);
                                     }
                                   }
                                 )
@@ -1791,8 +1803,14 @@ class _SettingsViewState extends State<SettingsView> {
     showDialog(
       context: context,
       builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+        bool isSubmittingStruktur = false;
+
         void submitStruktur() async {
           if (departemen.trim().isEmpty || jabatan.trim().isEmpty) return;
+          if (isSubmittingStruktur) return;
+          setDialogState(() => isSubmittingStruktur = true);
           FocusManager.instance.primaryFocus?.unfocus(); 
           
           List<Map<String, dynamic>> updatedList = List.from(currentList);
@@ -1809,9 +1827,8 @@ class _SettingsViewState extends State<SettingsView> {
             });
           }
 
-          // Tutup dialog form DULU, baru simpan
-          Navigator.of(dialogContext).pop();
-          await _saveStrukturToFirestore(updatedList);
+          await _saveStrukturOrganisasi(updatedList);
+          if (mounted) setDialogState(() => isSubmittingStruktur = false);
         }
 
         return AlertDialog(
@@ -1871,14 +1888,18 @@ class _SettingsViewState extends State<SettingsView> {
                 FocusManager.instance.primaryFocus?.unfocus();
                 Navigator.pop(dialogContext);
               }, 
-              child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))
+              child: const Text("Tutup", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.slate900, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-              onPressed: submitStruktur,
-              child: const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              onPressed: isSubmittingStruktur ? null : submitStruktur,
+              child: isSubmittingStruktur
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
+        );
+          },
         );
       },
     );
@@ -1891,8 +1912,14 @@ class _SettingsViewState extends State<SettingsView> {
     showDialog(
       context: context,
       builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+        bool isSubmittingEdit = false;
+
         void submitEdit() async {
           if (newDepName.trim().isEmpty || newDepName.trim() == oldDepName) return;
+          if (isSubmittingEdit) return;
+          setDialogState(() => isSubmittingEdit = true);
           FocusManager.instance.primaryFocus?.unfocus();
           
           List<Map<String, dynamic>> updatedList = List.from(currentList);
@@ -1902,9 +1929,8 @@ class _SettingsViewState extends State<SettingsView> {
             }
           }
 
-          // Tutup dialog form DULU, baru simpan
-          Navigator.of(dialogContext).pop();
-          await _saveStrukturToFirestore(updatedList);
+          await _saveStrukturOrganisasi(updatedList);
+          if (mounted) setDialogState(() => isSubmittingEdit = false);
         }
 
         return AlertDialog(
@@ -1947,22 +1973,24 @@ class _SettingsViewState extends State<SettingsView> {
                 FocusManager.instance.primaryFocus?.unfocus();
                 Navigator.pop(dialogContext);
               }, 
-              child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))
+              child: const Text("Tutup", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.slate900, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-              onPressed: submitEdit,
-              child: const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              onPressed: isSubmittingEdit ? null : submitEdit,
+              child: isSubmittingEdit
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
+        );
+          },
         );
       },
     );
   }
 
-  Future<bool> _saveStrukturToFirestore(List<Map<String, dynamic>> strukturList) async {
-    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
-
+  Future<bool> _saveStrukturOrganisasi(List<Map<String, dynamic>> strukturList) async {
     Set<String> deps = {};
     Set<String> jabs = {};
     
@@ -1978,11 +2006,9 @@ class _SettingsViewState extends State<SettingsView> {
     
     bool success = await ApiService.updateConfig('site', currentData);
     
-    if (mounted) Navigator.of(context).pop(); // Tutup loading
-    
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Berhasil menyimpan struktur organisasi!"), backgroundColor: AppColors.emerald500));
-      setState(() => _configFuture = _loadConfig());
+      setState(() => _configRefreshKey++);
     } else if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan struktur."), backgroundColor: AppColors.rose500));
     }

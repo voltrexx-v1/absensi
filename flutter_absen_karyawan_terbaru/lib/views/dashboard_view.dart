@@ -25,16 +25,25 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Future<void> _loadData() async {
-    final attendance = await ApiService.getAllAttendance();
-    final requests = await ApiService.getRequests();
-    final users = await ApiService.getUsers();
-    if (mounted) {
-      setState(() {
-        _allAttendance = attendance;
-        _allRequests = requests;
-        _allUsers = users;
-        _isLoading = false;
-      });
+    try {
+      final attendance = await ApiService.getAllAttendance();
+      final requests = await ApiService.getRequests();
+      final users = await ApiService.getUsers();
+      if (mounted) {
+        setState(() {
+          _allAttendance = attendance;
+          _allRequests = requests;
+          _allUsers = users;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Gagal load data dashboard: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

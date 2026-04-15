@@ -83,16 +83,21 @@ class _KaryawanViewState extends State<KaryawanView> {
   }
 
   Future<void> _fetchData() async {
-    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    var attendances = await ApiService.getAttendances();
-    var users = await ApiService.getUsers();
-    
-    var todayData = attendances.where((a) => a['date'] == today).toList();
-    if (mounted) setState(() { 
-      _todayAttendanceData = todayData; 
-      _usersData = users; 
-      _isLoadingData = false; 
-    });
+    try {
+      String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      var attendances = await ApiService.getAttendances();
+      var users = await ApiService.getUsers();
+      
+      var todayData = attendances.where((a) => a['date'] == today).toList();
+      if (mounted) setState(() { 
+        _todayAttendanceData = todayData; 
+        _usersData = users; 
+        _isLoadingData = false; 
+      });
+    } catch (e) {
+      debugPrint("Gagal load karyawan: $e");
+      if (mounted) setState(() => _isLoadingData = false);
+    }
   }
 
   @override

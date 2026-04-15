@@ -39,7 +39,7 @@ class _AdminConfigViewState extends State<AdminConfigView> {
 
   Future<void> _fetchConfig() async {
     try {
-      var data = await ApiService.getConfig('site');
+      var data = await ApiService.getConfig('site?t=${DateTime.now().millisecondsSinceEpoch}');
       if (data != null) {
         setState(() {
           List<dynamic> locs = data['locations'] ?? [];
@@ -158,7 +158,7 @@ class _AdminConfigViewState extends State<AdminConfigView> {
           _activeLocationId = null;
         }
       });
-      // Otomatis simpan ke Firestore setelah hapus
+      // Otomatis simpan ke API/MySQL setelah hapus
       _saveConfig();
     }
   }

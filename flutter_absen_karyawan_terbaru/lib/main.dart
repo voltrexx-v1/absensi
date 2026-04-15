@@ -14,7 +14,7 @@ void main() async {
   // Initialize date formatting for intl package
   await initializeDateFormatting('id_ID', null);
 
-  // Firebase initialization removed
+  // Menggunakan Laravel REST API + MySQL sebagai backend
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
