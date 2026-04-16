@@ -10,7 +10,7 @@ import '../services/api_service.dart';
 
 import 'dashboard_view.dart';
 import 'attendance_view.dart';
-import 'settings_view.dart' hide HelpView;
+import 'settings_view.dart';
 import 'request_view.dart';
 import 'karyawan_view.dart';
 import 'admin_depthead_view.dart';
@@ -124,6 +124,9 @@ class _MainLayoutState extends State<MainLayout> {
             if (_currentView != view) {
               setState(() => _currentView = view);
             }
+          },
+          onProfileUpdated: () {
+            setState(() {});
           },
         );
       case 'help':

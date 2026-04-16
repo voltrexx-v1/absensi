@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
@@ -10,10 +9,10 @@ import 'dart:typed_data';
 
 // TAMBAHAN UNTUK DOWNLOAD LANGSUNG
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:path_provider/path_provider.dart'; 
+import 'package:path_provider/path_provider.dart';
 import 'dart:io' as io;
-import 'package:share_plus/share_plus.dart'; 
-import 'package:file_saver/file_saver.dart'; 
+import 'package:share_plus/share_plus.dart';
+import 'package:file_saver/file_saver.dart';
 
 class KaryawanView extends StatefulWidget {
   final UserModel user;
@@ -54,7 +53,7 @@ class _KaryawanViewState extends State<KaryawanView> {
 
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _nikController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController(); 
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _kontakController = TextEditingController();
   final TextEditingController _alamatController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
@@ -62,8 +61,8 @@ class _KaryawanViewState extends State<KaryawanView> {
   String _formArea = '';
   String _formDepartemen = '';
   String _formJabatan = '';
-  String _formShift = 'Pagi'; 
-  String _formRole = 'Karyawan'; 
+  String _formShift = 'Pagi';
+  String _formRole = 'Karyawan';
   String _formJenisKelamin = 'Laki-laki';
   DateTime? _formTanggalLahir;
   String _formAgama = 'Islam';
@@ -87,13 +86,14 @@ class _KaryawanViewState extends State<KaryawanView> {
       String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
       var attendances = await ApiService.getAttendances();
       var users = await ApiService.getUsers();
-      
+
       var todayData = attendances.where((a) => a['date'] == today).toList();
-      if (mounted) setState(() { 
-        _todayAttendanceData = todayData; 
-        _usersData = users; 
-        _isLoadingData = false; 
-      });
+      if (mounted)
+        setState(() {
+          _todayAttendanceData = todayData;
+          _usersData = users;
+          _isLoadingData = false;
+        });
     } catch (e) {
       debugPrint("Gagal load karyawan: $e");
       if (mounted) setState(() => _isLoadingData = false);
@@ -105,7 +105,7 @@ class _KaryawanViewState extends State<KaryawanView> {
     _tableScrollController.dispose();
     _namaController.dispose();
     _nikController.dispose();
-    _emailController.dispose(); 
+    _emailController.dispose();
     _kontakController.dispose();
     _alamatController.dispose();
     _passController.dispose();
@@ -120,7 +120,7 @@ class _KaryawanViewState extends State<KaryawanView> {
       _editDocId = null;
       _namaController.clear();
       _nikController.clear();
-      _emailController.clear(); 
+      _emailController.clear();
       _kontakController.clear();
       _alamatController.clear();
       _passController.clear();
@@ -149,7 +149,8 @@ class _KaryawanViewState extends State<KaryawanView> {
               );
               _areas = ['Semua Area', ...areaList];
               if (widget.user.role == 'Head Area') {
-                if (widget.user.area != 'Semua Area' && widget.user.area.isNotEmpty) {
+                if (widget.user.area != 'Semua Area' &&
+                    widget.user.area.isNotEmpty) {
                   _selectedArea = widget.user.area;
                   _areas = [_selectedArea];
                 }
@@ -164,10 +165,8 @@ class _KaryawanViewState extends State<KaryawanView> {
 
             // Shift
             if (shifts.isNotEmpty) {
-              _shifts = shifts
-                  .map((e) => e['name'].toString())
-                  .toSet()
-                  .toList();
+              _shifts =
+                  shifts.map((e) => e['name'].toString()).toSet().toList();
               if (_shifts.isNotEmpty && !_shifts.contains(_formShift)) {
                 _formShift = _shifts.first;
               }
@@ -192,16 +191,16 @@ class _KaryawanViewState extends State<KaryawanView> {
               }
               _updateJabatanList(_formDepartemen);
             } else {
-              List<dynamic> depsData =
-                  data['departemens'] ??
+              List<dynamic> depsData = data['departemens'] ??
                   ['Umum', 'Manajemen Site', 'Maintenance'];
               List<dynamic> jabsData =
                   data['jabatans'] ?? ['Staff', 'Supervisor', 'Manajer'];
 
               List<String> sortedDeps =
-                  depsData.map((e) => e.toString()).toList()..sort(
-                    (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
-                  );
+                  depsData.map((e) => e.toString()).toList()
+                    ..sort(
+                      (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
+                    );
               _departemens = ['Semua Departemen', ...sortedDeps];
               if (sortedDeps.isNotEmpty &&
                   !_departemens.contains(_formDepartemen)) {
@@ -209,9 +208,10 @@ class _KaryawanViewState extends State<KaryawanView> {
               }
 
               List<String> sortedJabs =
-                  jabsData.map((e) => e.toString()).toList()..sort(
-                    (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
-                  );
+                  jabsData.map((e) => e.toString()).toList()
+                    ..sort(
+                      (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
+                    );
               _jabatans = ['Semua Jabatan', ...sortedJabs];
               if (sortedJabs.isNotEmpty && !_jabatans.contains(_formJabatan)) {
                 _formJabatan = sortedJabs.first;
@@ -239,11 +239,14 @@ class _KaryawanViewState extends State<KaryawanView> {
     setState(() {
       _jabatans = ['Semua Jabatan', ...relatedJabs];
 
-      if (preserveJabatan != null && relatedJabs.contains(preserveJabatan)) {
+      if (preserveJabatan != null && preserveJabatan.isNotEmpty) {
+        if (!_jabatans.contains(preserveJabatan)) {
+          _jabatans.add(preserveJabatan);
+        }
         _formJabatan = preserveJabatan;
-      } else if (relatedJabs.isNotEmpty) {
-        if (!relatedJabs.contains(_formJabatan)) {
-          _formJabatan = relatedJabs.first;
+      } else if (_jabatans.length > 1) {
+        if (!_jabatans.contains(_formJabatan)) {
+          _formJabatan = _jabatans[1];
         }
       } else {
         _formJabatan = '';
@@ -257,9 +260,9 @@ class _KaryawanViewState extends State<KaryawanView> {
       if (kIsWeb) {
         String nameOnly = fileName;
         if (fileName.endsWith('.csv')) {
-           nameOnly = fileName.substring(0, fileName.length - 4);
+          nameOnly = fileName.substring(0, fileName.length - 4);
         }
-        
+
         await FileSaver.instance.saveFile(
           name: nameOnly,
           bytes: bytes,
@@ -268,15 +271,16 @@ class _KaryawanViewState extends State<KaryawanView> {
         );
 
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text("File Excel berhasil diunduh."),
-              backgroundColor: AppColors.emerald500,
-              duration: Duration(seconds: 3),
-           ));
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("File Excel berhasil diunduh."),
+            backgroundColor: AppColors.emerald500,
+            duration: Duration(seconds: 3),
+          ));
         }
       } else {
         if (io.Platform.isIOS) {
-          final xFile = XFile.fromData(bytes, mimeType: 'text/csv', name: fileName);
+          final xFile =
+              XFile.fromData(bytes, mimeType: 'text/csv', name: fileName);
           await Share.shareXFiles([xFile]);
           return;
         }
@@ -287,7 +291,9 @@ class _KaryawanViewState extends State<KaryawanView> {
           if (!await directory.exists()) {
             directory = await getExternalStorageDirectory();
           }
-        } else if (io.Platform.isWindows || io.Platform.isMacOS || io.Platform.isLinux) {
+        } else if (io.Platform.isWindows ||
+            io.Platform.isMacOS ||
+            io.Platform.isLinux) {
           directory = await getDownloadsDirectory();
         } else {
           directory = await getApplicationDocumentsDirectory();
@@ -296,21 +302,22 @@ class _KaryawanViewState extends State<KaryawanView> {
         final filePath = '${directory?.path ?? ''}/$fileName';
         final file = io.File(filePath);
         await file.writeAsBytes(bytes);
-        
+
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("File Excel berhasil diunduh ke: $filePath"),
-              backgroundColor: AppColors.emerald500,
-              duration: const Duration(seconds: 5),
-           ));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("File Excel berhasil diunduh ke: $filePath"),
+            backgroundColor: AppColors.emerald500,
+            duration: const Duration(seconds: 5),
+          ));
         }
       }
     } catch (e) {
       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Gagal menyimpan file ke perangkat. Pastikan izin penyimpanan aktif."),
-            backgroundColor: AppColors.rose500,
-         ));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              "Gagal menyimpan file ke perangkat. Pastikan izin penyimpanan aktif."),
+          backgroundColor: AppColors.rose500,
+        ));
       }
     }
   }
@@ -320,7 +327,8 @@ class _KaryawanViewState extends State<KaryawanView> {
     if (_selectedUserIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Pilih minimal 1 karyawan (centang kotak) untuk mengunduh absensinya."),
+          content: Text(
+              "Pilih minimal 1 karyawan (centang kotak) untuk mengunduh absensinya."),
           backgroundColor: AppColors.rose500,
         ),
       );
@@ -330,18 +338,24 @@ class _KaryawanViewState extends State<KaryawanView> {
     setState(() => _isExporting = true);
 
     try {
-      String currentMonth = _filterMonth; 
+      String currentMonth = _filterMonth;
       var allAttendances = await ApiService.getAttendances();
-      
+
       List<Map<String, dynamic>> allAtts = allAttendances
-          .where((d) => _selectedUserIds.contains((d['user_id'] ?? d['karyawan_id']).toString()))
-          .where((d) => d['date'] != null && d['date'].toString().startsWith(currentMonth))
+          .where((d) => _selectedUserIds
+              .contains((d['user_id'] ?? d['karyawan_id']).toString()))
+          .where((d) =>
+              d['date'] != null &&
+              d['date'].toString().startsWith(currentMonth))
           .toList();
 
       if (allAtts.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Tidak ada data kehadiran di bulan ini untuk karyawan yang dipilih."), backgroundColor: AppColors.amber500),
+            const SnackBar(
+                content: Text(
+                    "Tidak ada data kehadiran di bulan ini untuk karyawan yang dipilih."),
+                backgroundColor: AppColors.amber500),
           );
         }
         setState(() => _isExporting = false);
@@ -351,7 +365,8 @@ class _KaryawanViewState extends State<KaryawanView> {
       // FORMAT CSV (Koma untuk HP, Titik Koma untuk PC)
       String delimiter = isMobileFormat ? ',' : ';';
       String csvData = isMobileFormat ? "" : "sep=;\n";
-      csvData += "Tanggal${delimiter}Hari${delimiter}Nama Karyawan${delimiter}NRP${delimiter}Jam Masuk${delimiter}Jam Pulang${delimiter}Scan Masuk${delimiter}Scan Pulang${delimiter}Status Masuk${delimiter}Status Pulang${delimiter}Keterangan (Pulang Cepat/Kegiatan Dinas)${delimiter}GPS Lokasi ( Perjalanan Dinas )\n";
+      csvData +=
+          "Tanggal${delimiter}Hari${delimiter}Nama Karyawan${delimiter}NRP${delimiter}Jam Masuk${delimiter}Jam Pulang${delimiter}Scan Masuk${delimiter}Scan Pulang${delimiter}Status Masuk${delimiter}Status Pulang${delimiter}Keterangan (Pulang Cepat/Kegiatan Dinas)${delimiter}GPS Lokasi ( Perjalanan Dinas )\n";
 
       String escapeCsv(String val) {
         String escaped = val.replaceAll('"', '""');
@@ -364,55 +379,71 @@ class _KaryawanViewState extends State<KaryawanView> {
         if (dateStr.isNotEmpty) {
           try {
             hari = DateFormat('EEEE', 'id_ID').format(DateTime.parse(dateStr));
-          } catch(e) {}
+          } catch (e) {}
         }
 
         String shiftTime = a['shift_time'] ?? '-';
         String jamMasukJadwal = '-';
         String jamPulangJadwal = '-';
         if (shiftTime.contains('-')) {
-           var parts = shiftTime.split('-');
-           jamMasukJadwal = parts[0].trim();
-           jamPulangJadwal = parts.length > 1 ? parts[1].trim() : '-';
+          var parts = shiftTime.split('-');
+          jamMasukJadwal = parts[0].trim();
+          jamPulangJadwal = parts.length > 1 ? parts[1].trim() : '-';
         }
 
         String scanMasuk = a['jam_masuk'] ?? '-';
         String scanKeluar = a['jam_pulang'] ?? '-';
         String statusKedis = a['status_kedisiplinan'] ?? '-';
         String statusPulang = a['status_pulang'] ?? '-';
-        
+
         String ket = a['keterangan'] ?? '-';
         String ketPulangCepat = '-';
         String ketDinas = '-';
-        
+
         String statusKehadiran = a['status_kehadiran'] ?? 'Hadir';
 
         // Logika pemisahan keterangan menjadi 2 kolom
-        if (statusKehadiran == 'Perjalanan Dinas' || ket.contains('Dinas otomatis di:') || ket.contains('Dinas di:')) {
-            ketDinas = ket.replaceAll('Dinas otomatis di:', '').replaceAll('Dinas di:', '').replaceAll('(Manual)', '').trim();
-            if (ketDinas.isEmpty) ketDinas = 'Perjalanan Dinas';
-            ketPulangCepat = a['kegiatan_dinas'] ?? '-';
-        } else if (statusPulang == 'Pulang Cepat' || ket.contains('Pulang Cepat:')) {
-            ketPulangCepat = ket.replaceAll('Pulang Cepat:', '').trim();
-        } else if (statusKehadiran == 'Izin' || statusKehadiran == 'Sakit' || statusKehadiran == 'Cuti' || statusKehadiran == 'Alpa') {
-            ketPulangCepat = "[$statusKehadiran] $ket";
-            statusKedis = '-';
-            statusPulang = '-';
+        if (statusKehadiran == 'Perjalanan Dinas' ||
+            ket.contains('Dinas otomatis di:') ||
+            ket.contains('Dinas di:')) {
+          ketDinas = ket
+              .replaceAll('Dinas otomatis di:', '')
+              .replaceAll('Dinas di:', '')
+              .replaceAll('(Manual)', '')
+              .trim();
+          if (ketDinas.isEmpty) ketDinas = 'Perjalanan Dinas';
+          ketPulangCepat = a['kegiatan_dinas'] ?? '-';
+        } else if (statusPulang == 'Pulang Cepat' ||
+            ket.contains('Pulang Cepat:')) {
+          ketPulangCepat = ket.replaceAll('Pulang Cepat:', '').trim();
+        } else if (statusKehadiran == 'Izin' ||
+            statusKehadiran == 'Sakit' ||
+            statusKehadiran == 'Cuti' ||
+            statusKehadiran == 'Alpa') {
+          ketPulangCepat = "[$statusKehadiran] $ket";
+          statusKedis = '-';
+          statusPulang = '-';
         } else if (ket != '-' && ket != 'Diinput manual oleh Admin') {
-            ketPulangCepat = ket; // Sisa keterangan umum masuk ke kolom keterangan Pulang Cepat
+          ketPulangCepat =
+              ket; // Sisa keterangan umum masuk ke kolom keterangan Pulang Cepat
         }
 
-        csvData += "${escapeCsv(dateStr)}$delimiter${escapeCsv(hari)}$delimiter${escapeCsv(a['nama_lengkap'] ?? '-')}$delimiter${escapeCsv(a['nik'] ?? '-')}$delimiter${escapeCsv(jamMasukJadwal)}$delimiter${escapeCsv(jamPulangJadwal)}$delimiter${escapeCsv(scanMasuk)}$delimiter${escapeCsv(scanKeluar)}$delimiter${escapeCsv(statusKedis)}$delimiter${escapeCsv(statusPulang)}$delimiter${escapeCsv(ketPulangCepat)}$delimiter${escapeCsv(ketDinas)}\n";
+        csvData +=
+            "${escapeCsv(dateStr)}$delimiter${escapeCsv(hari)}$delimiter${escapeCsv(a['nama_lengkap'] ?? '-')}$delimiter${escapeCsv(a['nik'] ?? '-')}$delimiter${escapeCsv(jamMasukJadwal)}$delimiter${escapeCsv(jamPulangJadwal)}$delimiter${escapeCsv(scanMasuk)}$delimiter${escapeCsv(scanKeluar)}$delimiter${escapeCsv(statusKedis)}$delimiter${escapeCsv(statusPulang)}$delimiter${escapeCsv(ketPulangCepat)}$delimiter${escapeCsv(ketDinas)}\n";
       }
 
       final bytes = utf8.encode(csvData);
-      final Uint8List uint8List = Uint8List.fromList([0xEF, 0xBB, 0xBF, ...bytes]); 
-      
+      final Uint8List uint8List =
+          Uint8List.fromList([0xEF, 0xBB, 0xBF, ...bytes]);
+
       String employeeName = "Kolektif";
       if (_selectedUserIds.length == 1 && allAtts.isNotEmpty) {
-          employeeName = (allAtts.first['nama_lengkap'] ?? 'Karyawan').toString().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+        employeeName = (allAtts.first['nama_lengkap'] ?? 'Karyawan')
+            .toString()
+            .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
       }
-      final String fileName = "Laporan_Absensi_${employeeName}_$currentMonth.csv";
+      final String fileName =
+          "Laporan_Absensi_${employeeName}_$currentMonth.csv";
 
       await _downloadFileDirectly(uint8List, fileName);
 
@@ -421,7 +452,9 @@ class _KaryawanViewState extends State<KaryawanView> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menarik data untuk export."), backgroundColor: AppColors.rose500));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Gagal menarik data untuk export."),
+            backgroundColor: AppColors.rose500));
       }
     } finally {
       if (mounted) setState(() => _isExporting = false);
@@ -442,30 +475,48 @@ class _KaryawanViewState extends State<KaryawanView> {
       itemBuilder: (context) => [
         const PopupMenuItem(
           enabled: false,
-          child: Text("💻 FORMAT DESKTOP (EXCEL PC)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400)),
+          child: Text("💻 FORMAT DESKTOP (EXCEL PC)",
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.slate400)),
         ),
         PopupMenuItem(
           value: 'absen_pc',
           child: Row(
             children: [
-              const Icon(Icons.event_available, color: AppColors.emerald500, size: 16),
+              const Icon(Icons.event_available,
+                  color: AppColors.emerald500, size: 16),
               const SizedBox(width: 8),
-              Text("Laporan Absen (${_selectedUserIds.length})", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppColors.slate800)),
+              Text("Laporan Absen (${_selectedUserIds.length})",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      color: AppColors.slate800)),
             ],
           ),
         ),
         const PopupMenuDivider(),
         const PopupMenuItem(
           enabled: false,
-          child: Text("📱 FORMAT MOBILE (HP/TABLET)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400)),
+          child: Text("📱 FORMAT MOBILE (HP/TABLET)",
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.slate400)),
         ),
         PopupMenuItem(
           value: 'absen_hp',
           child: Row(
             children: [
-              const Icon(Icons.event_available, color: AppColors.emerald500, size: 16),
+              const Icon(Icons.event_available,
+                  color: AppColors.emerald500, size: 16),
               const SizedBox(width: 8),
-              Text("Laporan Absen (${_selectedUserIds.length})", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppColors.slate800)),
+              Text("Laporan Absen (${_selectedUserIds.length})",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      color: AppColors.slate800)),
             ],
           ),
         ),
@@ -473,24 +524,32 @@ class _KaryawanViewState extends State<KaryawanView> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.emerald500,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.emerald500.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            )
-          ]
-        ),
+            color: AppColors.emerald500,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.emerald500.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              )
+            ]),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _isExporting 
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+            _isExporting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2))
                 : const Icon(Icons.download, size: 16, color: Colors.white),
             const SizedBox(width: 8),
-            const Text("UNDUH EXCEL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+            const Text("UNDUH EXCEL",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 10,
+                    letterSpacing: 1)),
             const SizedBox(width: 4),
             const Icon(Icons.arrow_drop_down, color: Colors.white, size: 16),
           ],
@@ -558,7 +617,8 @@ class _KaryawanViewState extends State<KaryawanView> {
       bool success = await ApiService.deleteUser(docId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(success ? "Data berhasil dihapus." : "Gagal menghapus data."),
+          content: Text(
+              success ? "Data berhasil dihapus." : "Gagal menghapus data."),
           backgroundColor: success ? AppColors.emerald500 : AppColors.rose500,
         ));
         if (success) {
@@ -571,43 +631,55 @@ class _KaryawanViewState extends State<KaryawanView> {
   // FUNGSI BARU: RESET (HAPUS) ABSEN HARI INI UNTUK SIMULASI
   Future<void> _resetAttendance(String docId, String nama) async {
     bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: Colors.white,
-        title: Row(
-          children: const [
-            Icon(Icons.history_toggle_off, color: AppColors.amber500),
-            SizedBox(width: 8),
-            Text("Reset Absen Hari Ini?", style: TextStyle(fontWeight: FontWeight.w900)),
-          ],
-        ),
-        content: Text(
-          "Yakin ingin menghapus data absen hari ini untuk $nama? Aksi ini sangat berguna untuk mengulang simulasi absensi.",
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.slate600, height: 1.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c, false),
-            child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.amber500,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => Navigator.pop(c, true),
-            child: const Text("Reset Absen", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          )
-        ],
-      )
-    );
+        context: context,
+        builder: (c) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24)),
+              backgroundColor: Colors.white,
+              title: Row(
+                children: const [
+                  Icon(Icons.history_toggle_off, color: AppColors.amber500),
+                  SizedBox(width: 8),
+                  Text("Reset Absen Hari Ini?",
+                      style: TextStyle(fontWeight: FontWeight.w900)),
+                ],
+              ),
+              content: Text(
+                "Yakin ingin menghapus data absen hari ini untuk $nama? Aksi ini sangat berguna untuk mengulang simulasi absensi.",
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.slate600,
+                    height: 1.5),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(c, false),
+                  child: const Text("Batal",
+                      style: TextStyle(
+                          color: AppColors.slate400,
+                          fontWeight: FontWeight.bold)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.amber500,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => Navigator.pop(c, true),
+                  child: const Text("Reset Absen",
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                )
+              ],
+            ));
 
     if (confirm == true) {
       bool success = await ApiService.deleteAttendance(docId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(success ? "Data absen hari ini berhasil direset." : "Gagal mereset data."),
+          content: Text(success
+              ? "Data absen hari ini berhasil direset."
+              : "Gagal mereset data."),
           backgroundColor: success ? AppColors.emerald500 : AppColors.rose500,
         ));
         if (success) _fetchData();
@@ -622,14 +694,19 @@ class _KaryawanViewState extends State<KaryawanView> {
     int selectedMonth = currentDate.month;
 
     await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(builder: (context, setStateDialog) {
             return AlertDialog(
               backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              title: const Text("Pilih Bulan", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppColors.slate800), textAlign: TextAlign.center),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24)),
+              title: const Text("Pilih Bulan",
+                  style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      color: AppColors.slate800),
+                  textAlign: TextAlign.center),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -637,12 +714,18 @@ class _KaryawanViewState extends State<KaryawanView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.chevron_left, color: AppColors.slate600),
+                        icon: const Icon(Icons.chevron_left,
+                            color: AppColors.slate600),
                         onPressed: () => setStateDialog(() => selectedYear--),
                       ),
-                      Text(selectedYear.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.slate800)),
+                      Text(selectedYear.toString(),
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.slate800)),
                       IconButton(
-                        icon: const Icon(Icons.chevron_right, color: AppColors.slate600),
+                        icon: const Icon(Icons.chevron_right,
+                            color: AppColors.slate600),
                         onPressed: () => setStateDialog(() => selectedYear++),
                       ),
                     ],
@@ -656,52 +739,63 @@ class _KaryawanViewState extends State<KaryawanView> {
                       int month = index + 1;
                       bool isSelected = month == selectedMonth;
                       return InkWell(
-                        onTap: () => setStateDialog(() => selectedMonth = month),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: 60,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.yellow500 : AppColors.slate50,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: isSelected ? AppColors.yellow500 : AppColors.slate200)
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            DateFormat('MMM', 'id_ID').format(DateTime(2020, month)).toUpperCase(),
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: isSelected ? AppColors.slate900 : AppColors.slate500,
-                              fontSize: 10
-                            )
-                          )
-                        )
-                      );
+                          onTap: () =>
+                              setStateDialog(() => selectedMonth = month),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                              width: 60,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppColors.yellow500
+                                      : AppColors.slate50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.yellow500
+                                          : AppColors.slate200)),
+                              alignment: Alignment.center,
+                              child: Text(
+                                  DateFormat('MMM', 'id_ID')
+                                      .format(DateTime(2020, month))
+                                      .toUpperCase(),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      color: isSelected
+                                          ? AppColors.slate900
+                                          : AppColors.slate500,
+                                      fontSize: 10))));
                     }),
                   )
                 ],
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context), 
-                  child: const Text("Batal", style: TextStyle(color: AppColors.slate500, fontWeight: FontWeight.bold))
-                ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Batal",
+                        style: TextStyle(
+                            color: AppColors.slate500,
+                            fontWeight: FontWeight.bold))),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.slate900, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.slate900,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12))),
                   onPressed: () {
                     setState(() {
-                      _filterMonth = "$selectedYear-${selectedMonth.toString().padLeft(2, '0')}";
+                      _filterMonth =
+                          "$selectedYear-${selectedMonth.toString().padLeft(2, '0')}";
                     });
                     Navigator.pop(context);
                   },
-                  child: const Text("Pilih", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: const Text("Pilih",
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 )
               ],
             );
-          }
-        );
-      }
-    );
+          });
+        });
   }
 
   // EDIT KARYAWAN
@@ -711,7 +805,7 @@ class _KaryawanViewState extends State<KaryawanView> {
       _editDocId = docId;
       _namaController.text = d['nama_lengkap'] ?? '';
       _nikController.text = d['nik'] ?? '';
-      _emailController.text = d['email'] ?? ''; 
+      _emailController.text = d['email'] ?? '';
       _kontakController.text = d['kontak'] ?? '';
       _alamatController.text = d['alamat'] ?? '';
       _passController.text = d['password'] ?? '';
@@ -734,12 +828,17 @@ class _KaryawanViewState extends State<KaryawanView> {
 
       _formArea = d['area'] ?? '';
       if (!_areas.contains(_formArea) && _areas.length > 1) {
-        _formArea = _areas[1]; 
+        _formArea = _areas[1];
       }
 
       _formDepartemen = d['departemen_id'] ?? '';
-      if (!_departemens.contains(_formDepartemen) && _departemens.length > 1) {
-        _formDepartemen = _departemens[1]; 
+      if (!_departemens.contains(_formDepartemen)) {
+        if (_formDepartemen.isNotEmpty) {
+          _departemens.add(_formDepartemen);
+        } else {
+          _formDepartemen =
+              _departemens.length > 1 ? _departemens[1] : 'Semua Departemen';
+        }
       }
 
       String existJabatan = d['jabatan'] ?? '';
@@ -760,14 +859,14 @@ class _KaryawanViewState extends State<KaryawanView> {
 
     String formNama = _namaController.text.trim();
     String formNik = _nikController.text.trim();
-    String formEmail = _emailController.text.trim(); 
+    String formEmail = _emailController.text.trim();
     String formKontak = _kontakController.text.trim();
     String formAlamat = _alamatController.text.trim();
     String formPass = _passController.text.trim();
 
     if (formNama.isEmpty ||
         formNik.isEmpty ||
-        formEmail.isEmpty || 
+        formEmail.isEmpty ||
         _formDepartemen.isEmpty ||
         _formJabatan.isEmpty ||
         _formTanggalLahir == null ||
@@ -787,7 +886,8 @@ class _KaryawanViewState extends State<KaryawanView> {
 
     try {
       var users = await ApiService.getUsers();
-      bool nikExists = users.any((u) => u['nik'] == formNik && u['id'].toString() != _editDocId);
+      bool nikExists = users
+          .any((u) => u['nik'] == formNik && u['id'].toString() != _editDocId);
 
       if (nikExists) {
         if (mounted) {
@@ -807,7 +907,7 @@ class _KaryawanViewState extends State<KaryawanView> {
       Map<String, dynamic> payload = {
         'nama_lengkap': formNama,
         'nik': formNik,
-        'email': formEmail, 
+        'email': formEmail,
         'jenis_kelamin': _formJenisKelamin,
         'tanggal_lahir': DateFormat('yyyy-MM-dd').format(_formTanggalLahir!),
         'agama': _formAgama,
@@ -821,7 +921,7 @@ class _KaryawanViewState extends State<KaryawanView> {
       };
 
       if (!_isEditing) {
-         payload['password'] = formPass;
+        payload['password'] = formPass;
       }
 
       if (_isEditing && _editDocId != null) {
@@ -867,7 +967,7 @@ class _KaryawanViewState extends State<KaryawanView> {
   Widget build(BuildContext context) {
     bool isAdminOrHead =
         widget.user.role == 'admin' || widget.user.role == 'Head Area';
-    bool isMobile = MediaQuery.of(context).size.width < 600; 
+    bool isMobile = MediaQuery.of(context).size.width < 600;
 
     return Center(
       child: ConstrainedBox(
@@ -877,11 +977,13 @@ class _KaryawanViewState extends State<KaryawanView> {
             Builder(
               builder: (context) {
                 if (_isLoadingData) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.yellow500));
+                  return const Center(
+                      child: CircularProgressIndicator(
+                          color: AppColors.yellow500));
                 }
 
                 // Kumpulkan data absen hari ini berdasarkan user_id
-                Map<String, Map<String,dynamic>> todayAttMap = {};
+                Map<String, Map<String, dynamic>> todayAttMap = {};
                 for (var data in _todayAttendanceData) {
                   if (data['user_id'] != null) {
                     todayAttMap[data['user_id'].toString()] = data;
@@ -892,31 +994,42 @@ class _KaryawanViewState extends State<KaryawanView> {
                 Map<String, String> deptHeadMap = {};
                 for (var d in _usersData) {
                   if (d['role'] == 'Head Area' && d['area'] != null) {
-                    deptHeadMap[d['area'].toString()] = d['nama_lengkap'] ?? 'Tanpa Nama';
+                    deptHeadMap[d['area'].toString()] =
+                        d['nama_lengkap'] ?? 'Tanpa Nama';
                   }
                 }
 
-                List<Map<String, dynamic>> employees = _usersData.where((d) => d['role'] != 'admin').toList();
+                List<Map<String, dynamic>> employees =
+                    _usersData.where((d) => d['role'] != 'admin').toList();
 
                 // Filter Area
                 if (_selectedArea.isNotEmpty && _selectedArea != 'Semua Area') {
-                  employees = employees.where((u) => (u['area'] ?? '') == _selectedArea).toList();
+                  employees = employees
+                      .where((u) => (u['area'] ?? '') == _selectedArea)
+                      .toList();
                 }
 
                 // Filter Departemen
                 if (_selectedDepartemen != 'Semua Departemen') {
-                  employees = employees.where((u) => (u['departemen_id'] ?? 'Umum') == _selectedDepartemen).toList();
+                  employees = employees
+                      .where((u) =>
+                          (u['departemen_id'] ?? 'Umum') == _selectedDepartemen)
+                      .toList();
                 }
 
                 // Filter Jenis Kelamin
                 if (_selectedGender != 'Semua Jenis Kelamin') {
-                  employees = employees.where((u) => (u['jenis_kelamin'] ?? '') == _selectedGender).toList();
+                  employees = employees
+                      .where(
+                          (u) => (u['jenis_kelamin'] ?? '') == _selectedGender)
+                      .toList();
                 }
 
                 // Filter Search
                 if (_searchQuery.isNotEmpty) {
                   employees = employees.where((u) {
-                    String nm = (u['nama_lengkap'] ?? '').toString().toLowerCase();
+                    String nm =
+                        (u['nama_lengkap'] ?? '').toString().toLowerCase();
                     String nk = (u['nik'] ?? '').toString().toLowerCase();
                     String q = _searchQuery.toLowerCase();
                     return nm.contains(q) || nk.contains(q);
@@ -927,931 +1040,1329 @@ class _KaryawanViewState extends State<KaryawanView> {
                   var dataA = a;
                   var dataB = b;
 
-                      String jabA = (dataA['jabatan'] ?? '').toString().toLowerCase();
-                      String jabB = (dataB['jabatan'] ?? '').toString().toLowerCase();
+                  String jabA =
+                      (dataA['jabatan'] ?? '').toString().toLowerCase();
+                  String jabB =
+                      (dataB['jabatan'] ?? '').toString().toLowerCase();
 
-                      bool isHeadA = dataA['role'] == 'Head Area' || jabA.contains('head');
-                      bool isHeadB = dataB['role'] == 'Head Area' || jabB.contains('head');
+                  bool isHeadA =
+                      dataA['role'] == 'Head Area' || jabA.contains('head');
+                  bool isHeadB =
+                      dataB['role'] == 'Head Area' || jabB.contains('head');
 
-                      if (isHeadA && !isHeadB) return -1;
-                      if (!isHeadA && isHeadB) return 1;
+                  if (isHeadA && !isHeadB) return -1;
+                  if (!isHeadA && isHeadB) return 1;
 
-                      String namaA = (dataA['nama_lengkap'] ?? '').toString().toLowerCase();
-                      String namaB = (dataB['nama_lengkap'] ?? '').toString().toLowerCase();
-                      return namaA.compareTo(namaB);
-                    });
+                  String namaA =
+                      (dataA['nama_lengkap'] ?? '').toString().toLowerCase();
+                  String namaB =
+                      (dataB['nama_lengkap'] ?? '').toString().toLowerCase();
+                  return namaA.compareTo(namaB);
+                });
 
-                    // Menghitung Statistik Ringkasan
-                    int totalLaki = employees
-                        .where(
-                          (u) =>
-                              (u['jenis_kelamin'] ?? '') ==
-                              'Laki-laki',
-                        )
-                        .length;
-                    int totalPerempuan = employees
-                        .where(
-                          (u) =>
-                              (u['jenis_kelamin'] ?? '') ==
-                              'Perempuan',
-                        )
-                        .length;
+                // Menghitung Statistik Ringkasan
+                int totalLaki = employees
+                    .where(
+                      (u) => (u['jenis_kelamin'] ?? '') == 'Laki-laki',
+                    )
+                    .length;
+                int totalPerempuan = employees
+                    .where(
+                      (u) => (u['jenis_kelamin'] ?? '') == 'Perempuan',
+                    )
+                    .length;
 
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          LayoutBuilder(
-                            builder: (context, constraints) {
-                              bool isWide = constraints.maxWidth > 800;
-                              return Flex(
-                                direction: isWide ? Axis.horizontal : Axis.vertical,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: isWide
-                                    ? CrossAxisAlignment.end
-                                    : CrossAxisAlignment.start,
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          bool isWide = constraints.maxWidth > 800;
+                          return Flex(
+                            direction: isWide ? Axis.horizontal : Axis.vertical,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: isWide
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  const Text(
+                                    "DATA KARYAWAN",
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.slate900,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 12,
+                                    runSpacing: 12,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
                                     children: [
-                                      const Text(
-                                        "DATA KARYAWAN",
-                                        style: TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.w900,
-                                          color: AppColors.slate900,
-                                          letterSpacing: -0.5,
+                                      // Filter Bulan (Dipindahkan ke kiri bawah judul)
+                                      InkWell(
+                                        onTap: _showMonthYearPicker,
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border.all(
+                                                color: AppColors.slate200),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.calendar_month,
+                                                  size: 14,
+                                                  color: AppColors.slate500),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                DateFormat('MMM yyyy', 'id_ID')
+                                                    .format(DateTime.parse(
+                                                        "$_filterMonth-01"))
+                                                    .toUpperCase(),
+                                                style: const TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: AppColors.slate700,
+                                                    letterSpacing: 1),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                      const SizedBox(height: 12),
-                                      Wrap(
-                                        spacing: 12,
-                                        runSpacing: 12,
-                                        crossAxisAlignment: WrapCrossAlignment.center,
-                                        children: [
-                                          // Filter Bulan (Dipindahkan ke kiri bawah judul)
-                                          InkWell(
-                                            onTap: _showMonthYearPicker,
-                                            borderRadius: BorderRadius.circular(12),
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                border: Border.all(color: AppColors.slate200),
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Icon(Icons.calendar_month, size: 14, color: AppColors.slate500),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    DateFormat('MMM yyyy', 'id_ID').format(DateTime.parse("$_filterMonth-01")).toUpperCase(),
-                                                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate700, letterSpacing: 1),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
 
-                                          // Admin Badge
-                                          if (_selectedArea.isNotEmpty && deptHeadMap.containsKey(_selectedArea))
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.emerald50,
-                                                borderRadius: BorderRadius.circular(12),
-                                                border: Border.all(color: AppColors.emerald200),
+                                      // Admin Badge
+                                      if (_selectedArea.isNotEmpty &&
+                                          deptHeadMap
+                                              .containsKey(_selectedArea))
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.emerald50,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                                color: AppColors.emerald200),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.person,
+                                                  size: 14,
+                                                  color: AppColors.emerald600),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                "Admin: ${deptHeadMap[_selectedArea]}",
+                                                style: const TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w900,
+                                                    color:
+                                                        AppColors.emerald600),
                                               ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Icon(Icons.person, size: 14, color: AppColors.emerald600),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    "Admin: ${deptHeadMap[_selectedArea]}",
-                                                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.emerald600),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                        ],
-                                      ),
+                                            ],
+                                          ),
+                                        ),
                                     ],
                                   ),
-                                  
-                                  if (!isWide) const SizedBox(height: 16),
+                                ],
+                              ),
 
-                                  // Search Bar
-                                  Container(
-                                    width: isWide ? 250 : constraints.maxWidth,
-                                    height: 46,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(color: AppColors.slate100),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: AppColors.black12,
-                                          blurRadius: 10,
-                                          offset: Offset(0, 5),
+                              if (!isWide) const SizedBox(height: 16),
+
+                              // Search Bar
+                              Container(
+                                width: isWide ? 250 : constraints.maxWidth,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(color: AppColors.slate100),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: AppColors.black12,
+                                      blurRadius: 10,
+                                      offset: Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: TextField(
+                                  onChanged: (v) =>
+                                      setState(() => _searchQuery = v),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.slate800,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    hintText: "Cari Nama / NRP...",
+                                    hintStyle: TextStyle(
+                                      color: AppColors.slate400,
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.search,
+                                      color: AppColors.slate400,
+                                      size: 18,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(40),
+                          border: Border.all(color: AppColors.slate100),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.black12,
+                              blurRadius: 10,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 24,
+                              ),
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(color: AppColors.slate100),
+                                ),
+                              ),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  bool isDesktopTab =
+                                      constraints.maxWidth > 900;
+
+                                  if (isDesktopTab) {
+                                    // --- TAMPILAN DESKTOP HEADER DENGAN EXPANDED/WRAP (Mengatasi Overflow) ---
+                                    return Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 12.0, bottom: 12.0),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.sort,
+                                                color: AppColors.slate400,
+                                                size: 20,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Text(
+                                                "DAFTAR KARYAWAN (${employees.length})",
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: AppColors.slate600,
+                                                  letterSpacing: 2,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 24),
+                                        Expanded(
+                                          child: Wrap(
+                                            alignment: WrapAlignment.end,
+                                            crossAxisAlignment:
+                                                WrapCrossAlignment.center,
+                                            spacing: 12,
+                                            runSpacing: 12,
+                                            children: [
+                                              // Dropdown Area
+                                              Container(
+                                                width: 200,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  border: Border.all(
+                                                      color:
+                                                          AppColors.slate200),
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                        color:
+                                                            AppColors.black12,
+                                                        blurRadius: 4)
+                                                  ],
+                                                ),
+                                                child:
+                                                    DropdownButtonHideUnderline(
+                                                  child: DropdownButton<String>(
+                                                    isExpanded: true,
+                                                    value: _areas.contains(
+                                                            _selectedArea)
+                                                        ? _selectedArea
+                                                        : (_areas.isNotEmpty
+                                                            ? _areas.first
+                                                            : null),
+                                                    icon: const Icon(
+                                                        Icons
+                                                            .keyboard_arrow_down,
+                                                        size: 20,
+                                                        color:
+                                                            AppColors.slate500),
+                                                    style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        color:
+                                                            AppColors.slate800,
+                                                        letterSpacing: 1),
+                                                    onChanged:
+                                                        (String? newValue) =>
+                                                            setState(() =>
+                                                                _selectedArea =
+                                                                    newValue!),
+                                                    items: _areas
+                                                        .map<
+                                                            DropdownMenuItem<
+                                                                String>>((String value) =>
+                                                            DropdownMenuItem<
+                                                                    String>(
+                                                                value: value,
+                                                                child: Text(
+                                                                    value
+                                                                        .toUpperCase(),
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis)))
+                                                        .toList(),
+                                                  ),
+                                                ),
+                                              ),
+                                              // Dropdown Jenis Kelamin
+                                              Container(
+                                                width: 200,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  border: Border.all(
+                                                      color:
+                                                          AppColors.slate200),
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                        color:
+                                                            AppColors.black12,
+                                                        blurRadius: 4)
+                                                  ],
+                                                ),
+                                                child:
+                                                    DropdownButtonHideUnderline(
+                                                  child: DropdownButton<String>(
+                                                    isExpanded: true,
+                                                    value: _genders.contains(
+                                                            _selectedGender)
+                                                        ? _selectedGender
+                                                        : _genders.first,
+                                                    icon: const Icon(
+                                                        Icons
+                                                            .keyboard_arrow_down,
+                                                        size: 20,
+                                                        color:
+                                                            AppColors.slate500),
+                                                    style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        color:
+                                                            AppColors.slate800,
+                                                        letterSpacing: 1),
+                                                    onChanged: (String?
+                                                            newValue) =>
+                                                        setState(() =>
+                                                            _selectedGender =
+                                                                newValue!),
+                                                    items: _genders
+                                                        .map<
+                                                            DropdownMenuItem<
+                                                                String>>((String value) =>
+                                                            DropdownMenuItem<
+                                                                    String>(
+                                                                value: value,
+                                                                child: Text(
+                                                                    value
+                                                                        .toUpperCase(),
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis)))
+                                                        .toList(),
+                                                  ),
+                                                ),
+                                              ),
+                                              // Dropdown Departemen selalu tampil
+                                              Container(
+                                                width: 200,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  border: Border.all(
+                                                      color:
+                                                          AppColors.slate200),
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                        color:
+                                                            AppColors.black12,
+                                                        blurRadius: 4)
+                                                  ],
+                                                ),
+                                                child:
+                                                    DropdownButtonHideUnderline(
+                                                  child: DropdownButton<String>(
+                                                    isExpanded: true,
+                                                    value: _departemens.contains(
+                                                            _selectedDepartemen)
+                                                        ? _selectedDepartemen
+                                                        : _departemens.first,
+                                                    icon: const Icon(
+                                                        Icons
+                                                            .keyboard_arrow_down,
+                                                        size: 20,
+                                                        color:
+                                                            AppColors.slate500),
+                                                    style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        color:
+                                                            AppColors.slate800,
+                                                        letterSpacing: 1),
+                                                    onChanged: (String?
+                                                            newValue) =>
+                                                        setState(() =>
+                                                            _selectedDepartemen =
+                                                                newValue!),
+                                                    items: _departemens
+                                                        .map<
+                                                            DropdownMenuItem<
+                                                                String>>((String value) =>
+                                                            DropdownMenuItem<
+                                                                    String>(
+                                                                value: value,
+                                                                child: Text(
+                                                                    value
+                                                                        .toUpperCase(),
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis)))
+                                                        .toList(),
+                                                  ),
+                                                ),
+                                              ),
+
+                                              if (isAdminOrHead) ...[
+                                                _buildExportButton(), // HANYA OPSI UNDUH LAPORAN ABSEN
+                                                ElevatedButton.icon(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        AppColors.yellow500,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        20)),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 14),
+                                                  ),
+                                                  onPressed: () {
+                                                    _closeForm();
+                                                    setState(
+                                                        () => _showForm = true);
+                                                  },
+                                                  icon: const Icon(
+                                                      Icons.person_add,
+                                                      size: 16,
+                                                      color:
+                                                          AppColors.slate900),
+                                                  label: const Text(
+                                                    "TAMBAH",
+                                                    style: TextStyle(
+                                                        color:
+                                                            AppColors.slate900,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: 10,
+                                                        letterSpacing: 1),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
                                         ),
                                       ],
-                                    ),
-                                    child: TextField(
-                                      onChanged: (v) =>
-                                          setState(() => _searchQuery = v),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.slate800,
-                                      ),
-                                      decoration: const InputDecoration(
-                                        hintText: "Cari Nama / NRP...",
-                                        hintStyle: TextStyle(
-                                          color: AppColors.slate400,
-                                        ),
-                                        prefixIcon: Icon(
-                                          Icons.search,
-                                          color: AppColors.slate400,
-                                          size: 18,
-                                        ),
-                                        border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 32),
-
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(40),
-                              border: Border.all(color: AppColors.slate100),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: AppColors.black12,
-                                  blurRadius: 10,
-                                  offset: Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: Column(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 24,
-                                  ),
-                                  decoration: const BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(color: AppColors.slate100),
-                                    ),
-                                  ),
-                                  child: LayoutBuilder(
-                                    builder: (context, constraints) {
-                                      bool isDesktopTab = constraints.maxWidth > 900;
-
-                                      if (isDesktopTab) {
-                                        // --- TAMPILAN DESKTOP HEADER DENGAN EXPANDED/WRAP (Mengatasi Overflow) ---
-                                        return Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.start, 
+                                    );
+                                  } else {
+                                    // --- TAMPILAN MOBILE HEADER ---
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
                                           children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Icon(
-                                                    Icons.sort,
-                                                    color: AppColors.slate400,
-                                                    size: 20,
-                                                  ),
-                                                  const SizedBox(width: 12),
-                                                  Text(
-                                                    "DAFTAR KARYAWAN (${employees.length})",
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w900,
-                                                      color: AppColors.slate600,
-                                                      letterSpacing: 2,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                            const Icon(Icons.sort,
+                                                color: AppColors.slate400,
+                                                size: 16),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              "DAFTAR KARYAWAN (${employees.length})",
+                                              style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: AppColors.slate600,
+                                                  letterSpacing: 2),
                                             ),
-                                            const SizedBox(width: 24),
-                                            Expanded(
-                                              child: Wrap(
-                                                alignment: WrapAlignment.end,
-                                                crossAxisAlignment: WrapCrossAlignment.center,
-                                                spacing: 12,
-                                                runSpacing: 12,
-                                                children: [
-                                                  // Dropdown Area
-                                                  Container(
-                                                    width: 200,
-                                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      border: Border.all(color: AppColors.slate200),
-                                                      borderRadius: BorderRadius.circular(24),
-                                                      boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 4)],
-                                                    ),
-                                                    child: DropdownButtonHideUnderline(
-                                                      child: DropdownButton<String>(
-                                                        isExpanded: true,
-                                                        value: _areas.contains(_selectedArea) ? _selectedArea : (_areas.isNotEmpty ? _areas.first : null),
-                                                        icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.slate500),
-                                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.slate800, letterSpacing: 1),
-                                                        onChanged: (String? newValue) => setState(() => _selectedArea = newValue!),
-                                                        items: _areas.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(value: value, child: Text(value.toUpperCase(), overflow: TextOverflow.ellipsis))).toList(),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border.all(
+                                                color: AppColors.slate200),
+                                            borderRadius:
+                                                BorderRadius.circular(24),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                  color: AppColors.black12,
+                                                  blurRadius: 4)
+                                            ],
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                              value:
+                                                  _areas.contains(_selectedArea)
+                                                      ? _selectedArea
+                                                      : (_areas.isNotEmpty
+                                                          ? _areas.first
+                                                          : null),
+                                              icon: const Icon(
+                                                  Icons.keyboard_arrow_down,
+                                                  size: 20,
+                                                  color: AppColors.slate500),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: AppColors.slate800,
+                                                  letterSpacing: 1),
+                                              onChanged: (String? newValue) =>
+                                                  setState(() => _selectedArea =
+                                                      newValue!),
+                                              items: _areas
+                                                  .map<
+                                                      DropdownMenuItem<
+                                                          String>>((String value) =>
+                                                      DropdownMenuItem<String>(
+                                                          value: value,
+                                                          child: Text(
+                                                              value
+                                                                  .toUpperCase(),
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis)))
+                                                  .toList(),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border.all(
+                                                color: AppColors.slate200),
+                                            borderRadius:
+                                                BorderRadius.circular(24),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                  color: AppColors.black12,
+                                                  blurRadius: 4)
+                                            ],
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                              value: _genders
+                                                      .contains(_selectedGender)
+                                                  ? _selectedGender
+                                                  : _genders.first,
+                                              icon: const Icon(
+                                                  Icons.keyboard_arrow_down,
+                                                  size: 20,
+                                                  color: AppColors.slate500),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: AppColors.slate800,
+                                                  letterSpacing: 1),
+                                              onChanged: (String? newValue) =>
+                                                  setState(() =>
+                                                      _selectedGender =
+                                                          newValue!),
+                                              items: _genders
+                                                  .map<
+                                                      DropdownMenuItem<
+                                                          String>>((String value) =>
+                                                      DropdownMenuItem<String>(
+                                                          value: value,
+                                                          child: Text(
+                                                              value
+                                                                  .toUpperCase(),
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis)))
+                                                  .toList(),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border.all(
+                                                color: AppColors.slate200),
+                                            borderRadius:
+                                                BorderRadius.circular(24),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                  color: AppColors.black12,
+                                                  blurRadius: 4)
+                                            ],
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                              value: _departemens.contains(
+                                                      _selectedDepartemen)
+                                                  ? _selectedDepartemen
+                                                  : _departemens.first,
+                                              icon: const Icon(
+                                                  Icons.keyboard_arrow_down,
+                                                  size: 20,
+                                                  color: AppColors.slate500),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: AppColors.slate800,
+                                                  letterSpacing: 1),
+                                              onChanged: (String? newValue) =>
+                                                  setState(() =>
+                                                      _selectedDepartemen =
+                                                          newValue!),
+                                              items: _departemens
+                                                  .map<
+                                                      DropdownMenuItem<
+                                                          String>>((String value) =>
+                                                      DropdownMenuItem<String>(
+                                                          value: value,
+                                                          child: Text(
+                                                              value
+                                                                  .toUpperCase(),
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis)))
+                                                  .toList(),
+                                            ),
+                                          ),
+                                        ),
+                                        if (isAdminOrHead) ...[
+                                          const SizedBox(height: 16),
+                                          Wrap(
+                                            spacing: 12,
+                                            runSpacing: 12,
+                                            children: [
+                                              _buildExportButton(), // HANYA OPSI UNDUH LAPORAN ABSEN
+                                              ElevatedButton.icon(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      AppColors.yellow500,
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20)),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 14),
+                                                ),
+                                                onPressed: () {
+                                                  _closeForm();
+                                                  setState(
+                                                      () => _showForm = true);
+                                                },
+                                                icon: const Icon(
+                                                    Icons.person_add,
+                                                    size: 16,
+                                                    color: AppColors.slate900),
+                                                label: const Text(
+                                                  "TAMBAH KARYAWAN",
+                                                  style: TextStyle(
+                                                      color: AppColors.slate900,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: 10,
+                                                      letterSpacing: 1),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ],
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                return RawScrollbar(
+                                  controller: _tableScrollController,
+                                  thumbVisibility: true,
+                                  trackVisibility:
+                                      false, // Track dihilangkan agar persis seperti gambar (melayang)
+                                  thickness: 6, // Tipis elegan
+                                  radius: const Radius.circular(
+                                      20), // Sangat bulat (pill)
+                                  thumbColor: AppColors.slate500.withValues(
+                                      alpha:
+                                          0.6), // Warna abu-abu seperti gambar
+                                  child: SingleChildScrollView(
+                                    controller: _tableScrollController,
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minWidth: constraints.maxWidth > 1000
+                                            ? constraints.maxWidth
+                                            : 1000,
+                                      ),
+                                      child: DataTable(
+                                        headingRowColor:
+                                            WidgetStateProperty.all(
+                                          Colors.white,
+                                        ),
+                                        headingTextStyle: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.slate400,
+                                          letterSpacing: 2,
+                                        ),
+                                        dividerThickness: 1,
+                                        dataRowMaxHeight: 90,
+                                        columns: [
+                                          const DataColumn(
+                                            label: Text('PROFIL KARYAWAN'),
+                                          ),
+                                          const DataColumn(
+                                            label: Text('INFO PERSONAL'),
+                                          ),
+                                          const DataColumn(
+                                            label: Text('POSISI & JABATAN'),
+                                          ),
+                                          const DataColumn(
+                                            label: Text('LOKASI / AREA'),
+                                          ),
+                                          const DataColumn(
+                                            label: Text('KONTAK & EMAIL'),
+                                          ),
+                                          const DataColumn(
+                                            label: Text('ABSEN HARI INI'),
+                                          ),
+                                          const DataColumn(
+                                            label: Text('STATUS'),
+                                          ),
+                                          if (isAdminOrHead)
+                                            const DataColumn(
+                                              label: Text('AKSI'),
+                                            ),
+                                        ],
+                                        rows: employees.map((doc) {
+                                          var d = doc;
+
+                                          // Logika Cek Status Absen Hari Ini (dari _todayAttendanceData)
+                                          var attDoc =
+                                              todayAttMap[doc['id'].toString()];
+                                          bool hasAttended = attDoc != null;
+                                          var attData = attDoc;
+                                          String jamMasuk = hasAttended
+                                              ? (attData!['jam_masuk'] ??
+                                                  '--:--')
+                                              : '--:--';
+                                          String jamPulang = hasAttended
+                                              ? (attData!['jam_pulang'] ??
+                                                  '--:--')
+                                              : '--:--';
+
+                                          String tglLahir = '-';
+                                          if (d['tanggal_lahir'] != null &&
+                                              d['tanggal_lahir']
+                                                  .toString()
+                                                  .isNotEmpty) {
+                                            try {
+                                              tglLahir = DateFormat(
+                                                'dd MMM yyyy',
+                                                'id_ID',
+                                              ).format(
+                                                DateTime.parse(
+                                                  d['tanggal_lahir'],
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              tglLahir = d['tanggal_lahir'];
+                                            }
+                                          }
+
+                                          return DataRow(
+                                            selected: _selectedUserIds.contains(
+                                              doc['id'].toString(),
+                                            ),
+                                            onSelectChanged: isAdminOrHead
+                                                ? (val) {
+                                                    setState(() {
+                                                      if (val == true) {
+                                                        _selectedUserIds.add(
+                                                          doc['id'].toString(),
+                                                        );
+                                                      } else {
+                                                        _selectedUserIds.remove(
+                                                          doc['id'].toString(),
+                                                        );
+                                                      }
+                                                    });
+                                                  }
+                                                : null,
+                                            cells: [
+                                              DataCell(
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      (d['nama_lengkap'] ??
+                                                              'Tanpa Nama')
+                                                          .toString()
+                                                          .toUpperCase(),
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: 13,
+                                                        color:
+                                                            AppColors.slate800,
                                                       ),
                                                     ),
-                                                  ),
-                                                  // Dropdown Jenis Kelamin
-                                                  Container(
-                                                    width: 200,
-                                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      border: Border.all(color: AppColors.slate200),
-                                                      borderRadius: BorderRadius.circular(24),
-                                                      boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 4)],
-                                                    ),
-                                                    child: DropdownButtonHideUnderline(
-                                                      child: DropdownButton<String>(
-                                                        isExpanded: true,
-                                                        value: _genders.contains(_selectedGender) ? _selectedGender : _genders.first,
-                                                        icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.slate500),
-                                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.slate800, letterSpacing: 1),
-                                                        onChanged: (String? newValue) => setState(() => _selectedGender = newValue!),
-                                                        items: _genders.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(value: value, child: Text(value.toUpperCase(), overflow: TextOverflow.ellipsis))).toList(),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  // Dropdown Departemen selalu tampil
-                                                  Container(
-                                                    width: 200,
-                                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      border: Border.all(color: AppColors.slate200),
-                                                      borderRadius: BorderRadius.circular(24),
-                                                      boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 4)],
-                                                    ),
-                                                    child: DropdownButtonHideUnderline(
-                                                      child: DropdownButton<String>(
-                                                        isExpanded: true,
-                                                        value: _departemens.contains(_selectedDepartemen) ? _selectedDepartemen : _departemens.first,
-                                                        icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.slate500),
-                                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.slate800, letterSpacing: 1),
-                                                        onChanged: (String? newValue) => setState(() => _selectedDepartemen = newValue!),
-                                                        items: _departemens.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(value: value, child: Text(value.toUpperCase(), overflow: TextOverflow.ellipsis))).toList(),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  
-                                                  if (isAdminOrHead) ...[
-                                                    _buildExportButton(), // HANYA OPSI UNDUH LAPORAN ABSEN
-                                                    ElevatedButton.icon(
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: AppColors.yellow500,
-                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                                      ),
-                                                      onPressed: () {
-                                                        _closeForm();
-                                                        setState(() => _showForm = true);
-                                                      },
-                                                      icon: const Icon(Icons.person_add, size: 16, color: AppColors.slate900),
-                                                      label: const Text(
-                                                        "TAMBAH",
-                                                        style: TextStyle(color: AppColors.slate900, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      d['nik'] ?? '-',
+                                                      style: const TextStyle(
+                                                        fontSize: 11,
+                                                        color:
+                                                            AppColors.indigo500,
+                                                        fontFamily: 'monospace',
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   ],
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      } else {
-                                        // --- TAMPILAN MOBILE HEADER ---
-                                        return Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.sort, color: AppColors.slate400, size: 16),
-                                                const SizedBox(width: 12),
-                                                Text(
-                                                  "DAFTAR KARYAWAN (${employees.length})",
-                                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate600, letterSpacing: 2),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 16),
-                                            Container(
-                                              width: double.infinity,
-                                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                border: Border.all(color: AppColors.slate200),
-                                                borderRadius: BorderRadius.circular(24),
-                                                boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 4)],
-                                              ),
-                                              child: DropdownButtonHideUnderline(
-                                                child: DropdownButton<String>(
-                                                  isExpanded: true,
-                                                  value: _areas.contains(_selectedArea) ? _selectedArea : (_areas.isNotEmpty ? _areas.first : null),
-                                                  icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.slate500),
-                                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.slate800, letterSpacing: 1),
-                                                  onChanged: (String? newValue) => setState(() => _selectedArea = newValue!),
-                                                  items: _areas.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(value: value, child: Text(value.toUpperCase(), overflow: TextOverflow.ellipsis))).toList(),
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Container(
-                                              width: double.infinity,
-                                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                border: Border.all(color: AppColors.slate200),
-                                                borderRadius: BorderRadius.circular(24),
-                                                boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 4)],
-                                              ),
-                                              child: DropdownButtonHideUnderline(
-                                                child: DropdownButton<String>(
-                                                  isExpanded: true,
-                                                  value: _genders.contains(_selectedGender) ? _selectedGender : _genders.first,
-                                                  icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.slate500),
-                                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.slate800, letterSpacing: 1),
-                                                  onChanged: (String? newValue) => setState(() => _selectedGender = newValue!),
-                                                  items: _genders.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(value: value, child: Text(value.toUpperCase(), overflow: TextOverflow.ellipsis))).toList(),
+                                              DataCell(
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      (d['jenis_kelamin'] ??
+                                                              '-')
+                                                          .toString()
+                                                          .toUpperCase(),
+                                                      style: const TextStyle(
+                                                        fontSize: 11,
+                                                        color:
+                                                            AppColors.slate800,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      tglLahir,
+                                                      style: const TextStyle(
+                                                        fontSize: 10,
+                                                        color:
+                                                            AppColors.slate500,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Container(
-                                              width: double.infinity,
-                                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                border: Border.all(color: AppColors.slate200),
-                                                borderRadius: BorderRadius.circular(24),
-                                                boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 4)],
-                                              ),
-                                              child: DropdownButtonHideUnderline(
-                                                child: DropdownButton<String>(
-                                                  isExpanded: true,
-                                                  value: _departemens.contains(_selectedDepartemen) ? _selectedDepartemen : _departemens.first,
-                                                  icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.slate500),
-                                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.slate800, letterSpacing: 1),
-                                                  onChanged: (String? newValue) => setState(() => _selectedDepartemen = newValue!),
-                                                  items: _departemens.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(value: value, child: Text(value.toUpperCase(), overflow: TextOverflow.ellipsis))).toList(),
+                                              DataCell(
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      (d['departemen_id'] ??
+                                                              'UMUM')
+                                                          .toString()
+                                                          .toUpperCase(),
+                                                      style: const TextStyle(
+                                                        fontSize: 11,
+                                                        color:
+                                                            AppColors.slate800,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      (d['jabatan'] ?? 'STAFF')
+                                                          .toString()
+                                                          .toUpperCase(),
+                                                      style: const TextStyle(
+                                                        fontSize: 10,
+                                                        color:
+                                                            AppColors.slate500,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                            ),
-
-                                            if (isAdminOrHead) ...[
-                                              const SizedBox(height: 16),
-                                              Wrap(
-                                                spacing: 12,
-                                                runSpacing: 12,
-                                                children: [
-                                                  _buildExportButton(), // HANYA OPSI UNDUH LAPORAN ABSEN
-                                                  ElevatedButton.icon(
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: AppColors.yellow500,
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                                    ),
-                                                    onPressed: () {
-                                                      _closeForm();
-                                                      setState(() => _showForm = true);
-                                                    },
-                                                    icon: const Icon(Icons.person_add, size: 16, color: AppColors.slate900),
-                                                    label: const Text(
-                                                      "TAMBAH KARYAWAN",
-                                                      style: TextStyle(color: AppColors.slate900, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ],
-                                        );
-                                      }
-                                    },
-                                  ),
-                                ),
-
-                                LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    return RawScrollbar(
-                                      controller: _tableScrollController,
-                                      thumbVisibility: true,
-                                      trackVisibility: false, // Track dihilangkan agar persis seperti gambar (melayang)
-                                      thickness: 6, // Tipis elegan
-                                      radius: const Radius.circular(20), // Sangat bulat (pill)
-                                      thumbColor: AppColors.slate500.withValues(alpha: 0.6), // Warna abu-abu seperti gambar
-                                      child: SingleChildScrollView(
-                                        controller: _tableScrollController,
-                                        scrollDirection: Axis.horizontal,
-                                        child: ConstrainedBox(
-                                          constraints: BoxConstraints(
-                                            minWidth: constraints.maxWidth > 1000
-                                                ? constraints.maxWidth
-                                                : 1000,
-                                          ),
-                                          child: DataTable(
-                                            headingRowColor: WidgetStateProperty.all(
-                                              Colors.white,
-                                            ),
-                                            headingTextStyle: const TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w900,
-                                              color: AppColors.slate400,
-                                              letterSpacing: 2,
-                                            ),
-                                            dividerThickness: 1,
-                                            dataRowMaxHeight: 90,
-                                            columns: [
-                                              const DataColumn(
-                                                label: Text('PROFIL KARYAWAN'),
-                                              ),
-                                              const DataColumn(
-                                                label: Text('INFO PERSONAL'),
-                                              ),
-                                              const DataColumn(
-                                                label: Text('POSISI & JABATAN'),
-                                              ),
-                                              const DataColumn(
-                                                label: Text('LOKASI / AREA'),
-                                              ),
-                                              const DataColumn(
-                                                label: Text('KONTAK & EMAIL'),
-                                              ),
-                                              const DataColumn(
-                                                label: Text('ABSEN HARI INI'),
-                                              ),
-                                              const DataColumn(
-                                                label: Text('STATUS'),
-                                              ),
-                                              if (isAdminOrHead)
-                                                const DataColumn(
-                                                  label: Text('AKSI'),
-                                                ),
-                                            ],
-                                            rows: employees.map((doc) {
-                                              var d = doc;
-
-                                              // Logika Cek Status Absen Hari Ini (dari _todayAttendanceData)
-                                              var attDoc = todayAttMap[doc['id'].toString()];
-                                              bool hasAttended = attDoc != null;
-                                              var attData = attDoc;
-                                              String jamMasuk = hasAttended ? (attData!['jam_masuk'] ?? '--:--') : '--:--';
-                                              String jamPulang = hasAttended ? (attData!['jam_pulang'] ?? '--:--') : '--:--';
-
-                                              String tglLahir = '-';
-                                              if (d['tanggal_lahir'] != null &&
-                                                  d['tanggal_lahir']
-                                                      .toString()
-                                                      .isNotEmpty) {
-                                                try {
-                                                  tglLahir =
-                                                      DateFormat(
-                                                        'dd MMM yyyy',
-                                                        'id_ID',
-                                                      ).format(
-                                                        DateTime.parse(
-                                                          d['tanggal_lahir'],
-                                                        ),
-                                                      );
-                                                } catch (e) {
-                                                  tglLahir = d['tanggal_lahir'];
-                                                }
-                                              }
-
-                                              return DataRow(
-                                                selected: _selectedUserIds.contains(
-                                                  doc['id'].toString(),
-                                                ),
-                                                onSelectChanged: isAdminOrHead
-                                                    ? (val) {
-                                                        setState(() {
-                                                          if (val == true) {
-                                                            _selectedUserIds.add(
-                                                              doc['id'].toString(),
-                                                            );
-                                                          } else {
-                                                            _selectedUserIds.remove(
-                                                              doc['id'].toString(),
-                                                            );
-                                                          }
-                                                        });
-                                                      }
-                                                    : null,
-                                                cells: [
-                                                  DataCell(
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                      children: [
-                                                        Text(
-                                                          (d['nama_lengkap'] ??
-                                                                  'Tanpa Nama')
-                                                              .toString()
-                                                              .toUpperCase(),
-                                                          style: const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w900,
-                                                            fontSize: 13,
-                                                            color: AppColors.slate800,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 4),
-                                                        Text(
-                                                          d['nik'] ?? '-',
-                                                          style: const TextStyle(
-                                                            fontSize: 11,
-                                                            color:
-                                                                AppColors.indigo500,
-                                                            fontFamily: 'monospace',
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                      children: [
-                                                        Text(
-                                                          (d['jenis_kelamin'] ?? '-')
-                                                              .toString()
-                                                              .toUpperCase(),
-                                                          style: const TextStyle(
-                                                            fontSize: 11,
-                                                            color: AppColors.slate800,
-                                                            fontWeight:
-                                                                FontWeight.w900,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 2),
-                                                        Text(
-                                                          tglLahir,
-                                                          style: const TextStyle(
-                                                            fontSize: 10,
-                                                            color: AppColors.slate500,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                      children: [
-                                                        Text(
-                                                          (d['departemen_id'] ??
-                                                                  'UMUM')
-                                                              .toString()
-                                                              .toUpperCase(),
-                                                          style: const TextStyle(
-                                                            fontSize: 11,
-                                                            color: AppColors.slate800,
-                                                            fontWeight:
-                                                                FontWeight.w900,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 2),
-                                                        Text(
-                                                          (d['jabatan'] ?? 'STAFF')
-                                                              .toString()
-                                                              .toUpperCase(),
-                                                          style: const TextStyle(
-                                                            fontSize: 10,
-                                                            color: AppColors.slate500,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets.symmetric(
-                                                                horizontal: 10,
-                                                                vertical: 6,
-                                                              ),
-                                                          decoration: BoxDecoration(
-                                                            color: AppColors.slate100,
-                                                            border: Border.all(
-                                                              color: AppColors.slate200,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(12),
-                                                          ),
-                                                          child: Text(
-                                                            (d['area'] ?? 'Belum Diatur')
-                                                                .toString()
-                                                                .toUpperCase(),
-                                                            style: const TextStyle(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.w900,
-                                                              color: AppColors.slate600,
-                                                              letterSpacing: 1,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ]
-                                                    )
-                                                  ),
-                                                  DataCell(
-                                                    Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Text(
-                                                          d['kontak'] ?? '-',
-                                                          style: const TextStyle(
-                                                            fontSize: 11,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: AppColors.slate800,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 2),
-                                                        Text(
-                                                          d['email'] ?? '-',
-                                                          style: const TextStyle(
-                                                            fontSize: 10,
-                                                            color: AppColors.slate500,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Column(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Icon(hasAttended ? Icons.check_circle : Icons.cancel, size: 14, color: hasAttended ? AppColors.emerald500 : AppColors.rose500),
-                                                            const SizedBox(width: 4),
-                                                            Text(
-                                                              hasAttended ? (attData!['status_kehadiran']?.toString().toUpperCase() ?? 'HADIR') : "BELUM ABSEN", 
-                                                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: hasAttended ? AppColors.emerald600 : AppColors.rose600)
-                                                            ),
-                                                          ]
-                                                        ),
-                                                        if (hasAttended) ...[
-                                                          const SizedBox(height: 4),
-                                                          Text("IN: $jamMasuk | OUT: $jamPulang", style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.slate500)),
-                                                          if (attData!['keterangan'] != null && attData['keterangan'].toString().contains("Pulang Cepat"))
-                                                            Padding(
-                                                              padding: const EdgeInsets.only(top: 2),
-                                                              child: Text(attData['keterangan'].toString().replaceAll("Pulang Cepat: ", ""), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 8, color: AppColors.slate400, fontStyle: FontStyle.italic)),
-                                                            )
-                                                        ]
-                                                      ]
-                                                    )
-                                                  ),
-                                                  DataCell(
+                                              DataCell(Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
                                                     Container(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 14,
-                                                            vertical: 6,
-                                                          ),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 6,
+                                                      ),
                                                       decoration: BoxDecoration(
-                                                        color: AppColors.emerald50,
+                                                        color:
+                                                            AppColors.slate100,
                                                         border: Border.all(
-                                                          color: AppColors.emerald200,
+                                                          color: AppColors
+                                                              .slate200,
                                                         ),
                                                         borderRadius:
-                                                            BorderRadius.circular(12),
+                                                            BorderRadius
+                                                                .circular(12),
                                                       ),
                                                       child: Text(
-                                                        (d['status_karyawan'] ??
-                                                                "AKTIF")
+                                                        (d['area'] ??
+                                                                'Belum Diatur')
                                                             .toString()
                                                             .toUpperCase(),
                                                         style: const TextStyle(
                                                           fontSize: 10,
-                                                          fontWeight: FontWeight.w900,
-                                                          color: AppColors.emerald600,
+                                                          fontWeight:
+                                                              FontWeight.w900,
+                                                          color: AppColors
+                                                              .slate600,
                                                           letterSpacing: 1,
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  if (isAdminOrHead)
-                                                    DataCell(
-                                                      Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          if (hasAttended)
-                                                            IconButton(
-                                                              icon: const Icon(
-                                                                Icons.history_toggle_off,
-                                                                size: 20,
-                                                                color: AppColors.amber500,
-                                                              ),
-                                                              tooltip: "Reset Absen Hari Ini (Simulasi)",
-                                                              style: IconButton.styleFrom(
-                                                                backgroundColor: AppColors.amber50,
-                                                              ),
-                                                              onPressed: () => _resetAttendance(
-                                                                attDoc!['id'].toString(),
-                                                                d['nama_lengkap'] ?? 'User',
-                                                              ),
-                                                            ),
-                                                          if (hasAttended) const SizedBox(width: 8),
-                                                          IconButton(
-                                                            icon: const Icon(
-                                                              Icons.edit,
-                                                              size: 20,
-                                                              color:
-                                                                  AppColors.blue500,
-                                                            ),
-                                                            tooltip: "Edit Karyawan",
-                                                            style:
-                                                                IconButton.styleFrom(
-                                                                  backgroundColor:
-                                                                      AppColors
-                                                                          .blue50,
-                                                                ),
-                                                            onPressed: () =>
-                                                                _editEmployee(
-                                                                  doc['id'].toString(),
-                                                                  d,
-                                                                ),
-                                                          ),
-                                                          const SizedBox(width: 8),
-                                                          IconButton(
-                                                            icon: const Icon(
-                                                              Icons.delete,
-                                                              size: 20,
-                                                              color:
-                                                                  AppColors.rose500,
-                                                            ),
-                                                            tooltip: "Hapus Karyawan",
-                                                            style:
-                                                                IconButton.styleFrom(
-                                                                  backgroundColor:
-                                                                      AppColors
-                                                                          .rose50,
-                                                                ),
-                                                            onPressed: () =>
-                                                                _deleteEmployee(
-                                                                  doc['id'].toString(),
-                                                                  d['nama_lengkap'] ??
-                                                                      'User',
-                                                                ),
-                                                          ),
-                                                        ],
+                                                  ])),
+                                              DataCell(
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      d['kontak'] ?? '-',
+                                                      style: const TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color:
+                                                            AppColors.slate800,
                                                       ),
                                                     ),
-                                                ],
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      d['email'] ?? '-',
+                                                      style: const TextStyle(
+                                                        fontSize: 10,
+                                                        color:
+                                                            AppColors.slate500,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              DataCell(Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(children: [
+                                                      Icon(
+                                                          hasAttended
+                                                              ? Icons
+                                                                  .check_circle
+                                                              : Icons.cancel,
+                                                          size: 14,
+                                                          color: hasAttended
+                                                              ? AppColors
+                                                                  .emerald500
+                                                              : AppColors
+                                                                  .rose500),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                          hasAttended
+                                                              ? (attData!['status_kehadiran']
+                                                                      ?.toString()
+                                                                      .toUpperCase() ??
+                                                                  'HADIR')
+                                                              : "BELUM ABSEN",
+                                                          style: TextStyle(
+                                                              fontSize: 10,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900,
+                                                              color: hasAttended
+                                                                  ? AppColors
+                                                                      .emerald600
+                                                                  : AppColors
+                                                                      .rose600)),
+                                                    ]),
+                                                    if (hasAttended) ...[
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                          "IN: $jamMasuk | OUT: $jamPulang",
+                                                          style: const TextStyle(
+                                                              fontSize: 9,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: AppColors
+                                                                  .slate500)),
+                                                      if (attData![
+                                                                  'keterangan'] !=
+                                                              null &&
+                                                          attData['keterangan']
+                                                              .toString()
+                                                              .contains(
+                                                                  "Pulang Cepat"))
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(top: 2),
+                                                          child: Text(
+                                                              attData['keterangan']
+                                                                  .toString()
+                                                                  .replaceAll(
+                                                                      "Pulang Cepat: ",
+                                                                      ""),
+                                                              maxLines: 1,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: const TextStyle(
+                                                                  fontSize: 8,
+                                                                  color: AppColors
+                                                                      .slate400,
+                                                                  fontStyle:
+                                                                      FontStyle
+                                                                          .italic)),
+                                                        )
+                                                    ]
+                                                  ])),
+                                              DataCell(
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 14,
+                                                    vertical: 6,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.emerald50,
+                                                    border: Border.all(
+                                                      color:
+                                                          AppColors.emerald200,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                  child: Text(
+                                                    (d['status_karyawan'] ??
+                                                            "AKTIF")
+                                                        .toString()
+                                                        .toUpperCase(),
+                                                    style: const TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      color:
+                                                          AppColors.emerald600,
+                                                      letterSpacing: 1,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (isAdminOrHead)
+                                                DataCell(
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      if (hasAttended)
+                                                        IconButton(
+                                                          icon: const Icon(
+                                                            Icons
+                                                                .history_toggle_off,
+                                                            size: 20,
+                                                            color: AppColors
+                                                                .amber500,
+                                                          ),
+                                                          tooltip:
+                                                              "Reset Absen Hari Ini (Simulasi)",
+                                                          style: IconButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                AppColors
+                                                                    .amber50,
+                                                          ),
+                                                          onPressed: () =>
+                                                              _resetAttendance(
+                                                            attDoc!['id']
+                                                                .toString(),
+                                                            d['nama_lengkap'] ??
+                                                                'User',
+                                                          ),
+                                                        ),
+                                                      if (hasAttended)
+                                                        const SizedBox(
+                                                            width: 8),
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                          Icons.edit,
+                                                          size: 20,
+                                                          color:
+                                                              AppColors.blue500,
+                                                        ),
+                                                        tooltip:
+                                                            "Edit Karyawan",
+                                                        style: IconButton
+                                                            .styleFrom(
+                                                          backgroundColor:
+                                                              AppColors.blue50,
+                                                        ),
+                                                        onPressed: () =>
+                                                            _editEmployee(
+                                                          doc['id'].toString(),
+                                                          d,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                          Icons.delete,
+                                                          size: 20,
+                                                          color:
+                                                              AppColors.rose500,
+                                                        ),
+                                                        tooltip:
+                                                            "Hapus Karyawan",
+                                                        style: IconButton
+                                                            .styleFrom(
+                                                          backgroundColor:
+                                                              AppColors.rose50,
+                                                        ),
+                                                        onPressed: () =>
+                                                            _deleteEmployee(
+                                                          doc['id'].toString(),
+                                                          d['nama_lengkap'] ??
+                                                              'User',
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                            ],
+                                          );
+                                        }).toList(),
                                       ),
-                                    );
-                                  },
-                                ),
-
-                                // STATISTIK RINGKASAN BAWAH (PANAH DIHAPUS)
-                                if (employees.isNotEmpty) ...[
-                                  const Divider(
-                                    height: 1,
-                                    color: AppColors.slate100,
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: isMobile ? 16 : 32,
-                                      vertical: 16,
                                     ),
-                                    color: AppColors.slate50,
-                                    width: double.infinity,
-                                    child: Wrap(
-                                      alignment: isMobile
-                                          ? WrapAlignment.center
-                                          : WrapAlignment.end,
-                                      spacing: 24,
-                                      runSpacing: 12,
-                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                  ),
+                                );
+                              },
+                            ),
+
+                            // STATISTIK RINGKASAN BAWAH (PANAH DIHAPUS)
+                            if (employees.isNotEmpty) ...[
+                              const Divider(
+                                height: 1,
+                                color: AppColors.slate100,
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isMobile ? 16 : 32,
+                                  vertical: 16,
+                                ),
+                                color: AppColors.slate50,
+                                width: double.infinity,
+                                child: Wrap(
+                                  alignment: isMobile
+                                      ? WrapAlignment.center
+                                      : WrapAlignment.end,
+                                  spacing: 24,
+                                  runSpacing: 12,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.people,
-                                              size: 14,
-                                              color: AppColors.slate500,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              "TOTAL KARYAWAN: ${employees.length}",
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w900,
-                                                color: AppColors.slate700,
-                                                letterSpacing: 1,
-                                              ),
-                                            ),
-                                          ],
+                                        const Icon(
+                                          Icons.people,
+                                          size: 14,
+                                          color: AppColors.slate500,
                                         ),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.male,
-                                              size: 14,
-                                              color: AppColors.blue500,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              "LAKI-LAKI: $totalLaki",
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w900,
-                                                color: AppColors.blue500,
-                                                letterSpacing: 1,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.female,
-                                              size: 14,
-                                              color: AppColors.rose500,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              "PEREMPUAN: $totalPerempuan",
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w900,
-                                                color: AppColors.rose600,
-                                                letterSpacing: 1,
-                                              ),
-                                            ),
-                                          ],
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          "TOTAL KARYAWAN: ${employees.length}",
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppColors.slate700,
+                                            letterSpacing: 1,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 100),
-                        ],
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.male,
+                                          size: 14,
+                                          color: AppColors.blue500,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          "LAKI-LAKI: $totalLaki",
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppColors.blue500,
+                                            letterSpacing: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.female,
+                                          size: 14,
+                                          color: AppColors.rose500,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          "PEREMPUAN: $totalPerempuan",
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppColors.rose600,
+                                            letterSpacing: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                ),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                );
+              },
+            ),
 
             // FORM MODAL TAMBAH/EDIT KARYAWAN
             if (_showForm) _buildFormModal(isMobile),
@@ -1867,12 +2378,14 @@ class _KaryawanViewState extends State<KaryawanView> {
         ? _formArea
         : (assignableAreas.isNotEmpty ? assignableAreas.first : null);
 
-    List<String> assignableDeps = _departemens.where((d) => d != 'Semua Departemen').toList();
+    List<String> assignableDeps =
+        _departemens.where((d) => d != 'Semua Departemen').toList();
     String? dropdownDepValue = assignableDeps.contains(_formDepartemen)
         ? _formDepartemen
         : (assignableDeps.isNotEmpty ? assignableDeps.first : null);
 
-    List<String> assignableJabs = _jabatans.where((j) => j != 'Semua Jabatan').toList();
+    List<String> assignableJabs =
+        _jabatans.where((j) => j != 'Semua Jabatan').toList();
     String? dropdownJabValue = assignableJabs.contains(_formJabatan)
         ? _formJabatan
         : (assignableJabs.isNotEmpty ? assignableJabs.first : null);
@@ -1967,214 +2480,497 @@ class _KaryawanViewState extends State<KaryawanView> {
                         ],
                       ),
                 const SizedBox(height: 16),
-                
+
                 // BARIS 2: JENIS KELAMIN & TANGGAL LAHIR
-                isMobile 
-                  ? Column(
-                      children: [
-                        _buildInputCol("JENIS KELAMIN", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: _formJenisKelamin, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: ['Laki-laki', 'Perempuan'].map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) => setState(() => _formJenisKelamin = v!),
-                        )),
+                isMobile
+                    ? Column(children: [
+                        _buildInputCol(
+                            "JENIS KELAMIN",
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: _formJenisKelamin,
+                              icon: const Icon(Icons.keyboard_arrow_down,
+                                  color: AppColors.slate500),
+                              decoration: _inputDeco(""),
+                              items: ['Laki-laki', 'Perempuan']
+                                  .map<DropdownMenuItem<String>>((e) =>
+                                      DropdownMenuItem<String>(
+                                          value: e,
+                                          child: Text(e,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis)))
+                                  .toList(),
+                              onChanged: (v) =>
+                                  setState(() => _formJenisKelamin = v!),
+                            )),
                         const SizedBox(height: 16),
-                        _buildInputCol("TANGGAL LAHIR", InkWell(
-                          onTap: () async {
-                            DateTime? picked = await showDatePicker(
-                              context: context, initialDate: _formTanggalLahir ?? DateTime(1980), firstDate: DateTime(1950), lastDate: DateTime.now(),
-                            );
-                            if (picked != null) setState(() => _formTanggalLahir = picked);
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.slate200), borderRadius: BorderRadius.circular(16)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(_formTanggalLahir != null ? DateFormat('dd MMMM yyyy', 'id_ID').format(_formTanggalLahir!) : "Pilih Tanggal", style: TextStyle(fontWeight: FontWeight.bold, color: _formTanggalLahir != null ? AppColors.slate800 : AppColors.slate400)),
-                                const Icon(Icons.calendar_today, size: 16, color: AppColors.slate400),
-                              ],
-                            ),
-                          ),
-                        )),
-                      ]
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: _buildInputCol("JENIS KELAMIN", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: _formJenisKelamin, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: ['Laki-laki', 'Perempuan'].map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) => setState(() => _formJenisKelamin = v!),
-                        ))),
-                        const SizedBox(width: 16),
-                        Expanded(child: _buildInputCol("TANGGAL LAHIR", InkWell(
-                          onTap: () async {
-                            DateTime? picked = await showDatePicker(
-                              context: context, initialDate: _formTanggalLahir ?? DateTime(1980), firstDate: DateTime(1950), lastDate: DateTime.now(),
-                            );
-                            if (picked != null) setState(() => _formTanggalLahir = picked);
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.slate200), borderRadius: BorderRadius.circular(16)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(_formTanggalLahir != null ? DateFormat('dd MMMM yyyy', 'id_ID').format(_formTanggalLahir!) : "Pilih Tanggal", style: TextStyle(fontWeight: FontWeight.bold, color: _formTanggalLahir != null ? AppColors.slate800 : AppColors.slate400)),
-                                const Icon(Icons.calendar_today, size: 16, color: AppColors.slate400),
-                              ],
-                            ),
-                          ),
-                        ))),
-                      ],
-                    ),
+                        _buildInputCol(
+                            "TANGGAL LAHIR",
+                            InkWell(
+                              onTap: () async {
+                                DateTime? picked = await showDatePicker(
+                                  context: context,
+                                  initialDate:
+                                      _formTanggalLahir ?? DateTime(1980),
+                                  firstDate: DateTime(1950),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (picked != null)
+                                  setState(() => _formTanggalLahir = picked);
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 16),
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border:
+                                        Border.all(color: AppColors.slate200),
+                                    borderRadius: BorderRadius.circular(16)),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                        _formTanggalLahir != null
+                                            ? DateFormat(
+                                                    'dd MMMM yyyy', 'id_ID')
+                                                .format(_formTanggalLahir!)
+                                            : "Pilih Tanggal",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: _formTanggalLahir != null
+                                                ? AppColors.slate800
+                                                : AppColors.slate400)),
+                                    const Icon(Icons.calendar_today,
+                                        size: 16, color: AppColors.slate400),
+                                  ],
+                                ),
+                              ),
+                            )),
+                      ])
+                    : Row(
+                        children: [
+                          Expanded(
+                              child: _buildInputCol(
+                                  "JENIS KELAMIN",
+                                  DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    initialValue: _formJenisKelamin,
+                                    icon: const Icon(Icons.keyboard_arrow_down,
+                                        color: AppColors.slate500),
+                                    decoration: _inputDeco(""),
+                                    items: ['Laki-laki', 'Perempuan']
+                                        .map<DropdownMenuItem<String>>((e) =>
+                                            DropdownMenuItem<String>(
+                                                value: e,
+                                                child: Text(e,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    overflow:
+                                                        TextOverflow.ellipsis)))
+                                        .toList(),
+                                    onChanged: (v) =>
+                                        setState(() => _formJenisKelamin = v!),
+                                  ))),
+                          const SizedBox(width: 16),
+                          Expanded(
+                              child: _buildInputCol(
+                                  "TANGGAL LAHIR",
+                                  InkWell(
+                                    onTap: () async {
+                                      DateTime? picked = await showDatePicker(
+                                        context: context,
+                                        initialDate:
+                                            _formTanggalLahir ?? DateTime(1980),
+                                        firstDate: DateTime(1950),
+                                        lastDate: DateTime.now(),
+                                      );
+                                      if (picked != null)
+                                        setState(
+                                            () => _formTanggalLahir = picked);
+                                    },
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 16),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(
+                                              color: AppColors.slate200),
+                                          borderRadius:
+                                              BorderRadius.circular(16)),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                              _formTanggalLahir != null
+                                                  ? DateFormat('dd MMMM yyyy',
+                                                          'id_ID')
+                                                      .format(
+                                                          _formTanggalLahir!)
+                                                  : "Pilih Tanggal",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: _formTanggalLahir !=
+                                                          null
+                                                      ? AppColors.slate800
+                                                      : AppColors.slate400)),
+                                          const Icon(Icons.calendar_today,
+                                              size: 16,
+                                              color: AppColors.slate400),
+                                        ],
+                                      ),
+                                    ),
+                                  ))),
+                        ],
+                      ),
                 const SizedBox(height: 16),
 
                 // BARIS 3: AGAMA & NO. TELP
-                isMobile 
-                  ? Column(
-                      children: [
-                        _buildInputCol("AGAMA", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: _formAgama, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'].map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) => setState(() => _formAgama = v!),
-                        )),
+                isMobile
+                    ? Column(children: [
+                        _buildInputCol(
+                            "AGAMA",
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: _formAgama,
+                              icon: const Icon(Icons.keyboard_arrow_down,
+                                  color: AppColors.slate500),
+                              decoration: _inputDeco(""),
+                              items: [
+                                'Islam',
+                                'Kristen',
+                                'Katolik',
+                                'Hindu',
+                                'Buddha',
+                                'Konghucu'
+                              ]
+                                  .map<DropdownMenuItem<String>>((e) =>
+                                      DropdownMenuItem<String>(
+                                          value: e,
+                                          child: Text(e,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis)))
+                                  .toList(),
+                              onChanged: (v) => setState(() => _formAgama = v!),
+                            )),
                         const SizedBox(height: 16),
-                        _buildInputCol("NO. TELEPON", TextField(textInputAction: TextInputAction.next, keyboardType: TextInputType.phone, controller: _kontakController, decoration: _inputDeco("No. HP Aktif"))),
-                      ]
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: _buildInputCol("AGAMA", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: _formAgama, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'].map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) => setState(() => _formAgama = v!),
-                        ))),
-                        const SizedBox(width: 16),
-                        Expanded(child: _buildInputCol("NO. TELEPON", TextField(textInputAction: TextInputAction.next, keyboardType: TextInputType.phone, controller: _kontakController, decoration: _inputDeco("No. HP Aktif")))),
-                      ],
-                    ),
+                        _buildInputCol(
+                            "NO. TELEPON",
+                            TextField(
+                                textInputAction: TextInputAction.next,
+                                keyboardType: TextInputType.phone,
+                                controller: _kontakController,
+                                decoration: _inputDeco("No. HP Aktif"))),
+                      ])
+                    : Row(
+                        children: [
+                          Expanded(
+                              child: _buildInputCol(
+                                  "AGAMA",
+                                  DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    initialValue: _formAgama,
+                                    icon: const Icon(Icons.keyboard_arrow_down,
+                                        color: AppColors.slate500),
+                                    decoration: _inputDeco(""),
+                                    items: [
+                                      'Islam',
+                                      'Kristen',
+                                      'Katolik',
+                                      'Hindu',
+                                      'Buddha',
+                                      'Konghucu'
+                                    ]
+                                        .map<DropdownMenuItem<String>>((e) =>
+                                            DropdownMenuItem<String>(
+                                                value: e,
+                                                child: Text(e,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    overflow:
+                                                        TextOverflow.ellipsis)))
+                                        .toList(),
+                                    onChanged: (v) =>
+                                        setState(() => _formAgama = v!),
+                                  ))),
+                          const SizedBox(width: 16),
+                          Expanded(
+                              child: _buildInputCol(
+                                  "NO. TELEPON",
+                                  TextField(
+                                      textInputAction: TextInputAction.next,
+                                      keyboardType: TextInputType.phone,
+                                      controller: _kontakController,
+                                      decoration: _inputDeco("No. HP Aktif")))),
+                        ],
+                      ),
                 const SizedBox(height: 16),
 
                 // BARIS 4: EMAIL & ALAMAT LENGKAP
-                isMobile 
-                  ? Column(
-                      children: [
-                        _buildInputCol("ALAMAT EMAIL", TextField(textInputAction: TextInputAction.next, keyboardType: TextInputType.emailAddress, controller: _emailController, decoration: _inputDeco("email@karyawan.com"))),
+                isMobile
+                    ? Column(children: [
+                        _buildInputCol(
+                            "ALAMAT EMAIL",
+                            TextField(
+                                textInputAction: TextInputAction.next,
+                                keyboardType: TextInputType.emailAddress,
+                                controller: _emailController,
+                                decoration: _inputDeco("email@karyawan.com"))),
                         const SizedBox(height: 16),
-                        _buildInputCol("ALAMAT LENGKAP", TextField(textInputAction: TextInputAction.next, maxLines: 2, controller: _alamatController, decoration: _inputDeco("Alamat Lengkap Karyawan"))),
-                      ]
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: _buildInputCol("ALAMAT EMAIL", TextField(textInputAction: TextInputAction.next, keyboardType: TextInputType.emailAddress, controller: _emailController, decoration: _inputDeco("email@karyawan.com")))),
-                        const SizedBox(width: 16),
-                        Expanded(child: _buildInputCol("ALAMAT LENGKAP", TextField(textInputAction: TextInputAction.next, maxLines: 2, controller: _alamatController, decoration: _inputDeco("Alamat Lengkap Karyawan")))),
-                      ],
-                    ),
+                        _buildInputCol(
+                            "ALAMAT LENGKAP",
+                            TextField(
+                                textInputAction: TextInputAction.next,
+                                maxLines: 2,
+                                controller: _alamatController,
+                                decoration:
+                                    _inputDeco("Alamat Lengkap Karyawan"))),
+                      ])
+                    : Row(
+                        children: [
+                          Expanded(
+                              child: _buildInputCol(
+                                  "ALAMAT EMAIL",
+                                  TextField(
+                                      textInputAction: TextInputAction.next,
+                                      keyboardType: TextInputType.emailAddress,
+                                      controller: _emailController,
+                                      decoration:
+                                          _inputDeco("email@karyawan.com")))),
+                          const SizedBox(width: 16),
+                          Expanded(
+                              child: _buildInputCol(
+                                  "ALAMAT LENGKAP",
+                                  TextField(
+                                      textInputAction: TextInputAction.next,
+                                      maxLines: 2,
+                                      controller: _alamatController,
+                                      decoration: _inputDeco(
+                                          "Alamat Lengkap Karyawan")))),
+                        ],
+                      ),
                 const SizedBox(height: 16),
-                
+
                 // BARIS 5: DEPARTEMEN & JABATAN
-                isMobile 
-                  ? Column(
-                      children: [
-                        _buildInputCol("DEPARTEMEN / DIVISI", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: dropdownDepValue, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: assignableDeps.map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) {
-                            setState(() {
-                              _formDepartemen = v!;
-                              _updateJabatanList(v); // Auto filter jabatan
-                            });
-                          },
-                        )),
+                isMobile
+                    ? Column(children: [
+                        _buildInputCol(
+                            "DEPARTEMEN / DIVISI",
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: dropdownDepValue,
+                              icon: const Icon(Icons.keyboard_arrow_down,
+                                  color: AppColors.slate500),
+                              decoration: _inputDeco(""),
+                              items: assignableDeps
+                                  .map<DropdownMenuItem<String>>((e) =>
+                                      DropdownMenuItem<String>(
+                                          value: e,
+                                          child: Text(e,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis)))
+                                  .toList(),
+                              onChanged: (v) {
+                                setState(() {
+                                  _formDepartemen = v!;
+                                  _updateJabatanList(v); // Auto filter jabatan
+                                });
+                              },
+                            )),
                         const SizedBox(height: 16),
-                        _buildInputCol("JABATAN / POSISI", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: dropdownJabValue, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: assignableJabs.map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) => setState(() => _formJabatan = v!),
-                        )),
-                      ]
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: _buildInputCol("DEPARTEMEN / DIVISI", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: dropdownDepValue, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: assignableDeps.map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) {
-                            setState(() {
-                              _formDepartemen = v!;
-                              _updateJabatanList(v); // Auto filter jabatan
-                            });
-                          },
-                        ))),
-                        const SizedBox(width: 16),
-                        Expanded(child: _buildInputCol("JABATAN / POSISI", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: dropdownJabValue, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: assignableJabs.map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) => setState(() => _formJabatan = v!),
-                        ))),
-                      ],
-                    ),
+                        _buildInputCol(
+                            "JABATAN / POSISI",
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: dropdownJabValue,
+                              icon: const Icon(Icons.keyboard_arrow_down,
+                                  color: AppColors.slate500),
+                              decoration: _inputDeco(""),
+                              items: assignableJabs
+                                  .map<DropdownMenuItem<String>>((e) =>
+                                      DropdownMenuItem<String>(
+                                          value: e,
+                                          child: Text(e,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis)))
+                                  .toList(),
+                              onChanged: (v) =>
+                                  setState(() => _formJabatan = v!),
+                            )),
+                      ])
+                    : Row(
+                        children: [
+                          Expanded(
+                              child: _buildInputCol(
+                                  "DEPARTEMEN / DIVISI",
+                                  DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    initialValue: dropdownDepValue,
+                                    icon: const Icon(Icons.keyboard_arrow_down,
+                                        color: AppColors.slate500),
+                                    decoration: _inputDeco(""),
+                                    items: assignableDeps
+                                        .map<DropdownMenuItem<String>>((e) =>
+                                            DropdownMenuItem<String>(
+                                                value: e,
+                                                child: Text(e,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    overflow:
+                                                        TextOverflow.ellipsis)))
+                                        .toList(),
+                                    onChanged: (v) {
+                                      setState(() {
+                                        _formDepartemen = v!;
+                                        _updateJabatanList(
+                                            v); // Auto filter jabatan
+                                      });
+                                    },
+                                  ))),
+                          const SizedBox(width: 16),
+                          Expanded(
+                              child: _buildInputCol(
+                                  "JABATAN / POSISI",
+                                  DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    initialValue: dropdownJabValue,
+                                    icon: const Icon(Icons.keyboard_arrow_down,
+                                        color: AppColors.slate500),
+                                    decoration: _inputDeco(""),
+                                    items: assignableJabs
+                                        .map<DropdownMenuItem<String>>((e) =>
+                                            DropdownMenuItem<String>(
+                                                value: e,
+                                                child: Text(e,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    overflow:
+                                                        TextOverflow.ellipsis)))
+                                        .toList(),
+                                    onChanged: (v) =>
+                                        setState(() => _formJabatan = v!),
+                                  ))),
+                        ],
+                      ),
                 const SizedBox(height: 16),
 
                 // BARIS 6: AREA PENUGASAN & KATA SANDI (KATA SANDI HANYA MUNCUL JIKA TAMBAH BARU / !_isEditing)
                 isMobile
-                  ? Column(
-                      children: [
-                        _buildInputCol("AREA PENUGASAN (SITE)", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: dropdownAreaValue, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: assignableAreas.map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) {
-                            setState(() {
-                              _formArea = v!;
-                            });
-                          },
-                        )),
-                        if (!_isEditing) ...[
-                           const SizedBox(height: 16),
-                           _buildInputCol("KATA SANDI BARU", TextField(textInputAction: TextInputAction.done, onSubmitted: (_) => _submitKaryawan(), controller: _passController, obscureText: true, decoration: _inputDeco("Kata Sandi Rahasia (Diperlukan untuk login)"))),
-                        ]
-                      ]
-                    )
-                  : (!_isEditing) 
-                      ? Row(
-                          children: [
-                            Expanded(child: _buildInputCol("AREA PENUGASAN (SITE)", DropdownButtonFormField<String>(
+                    ? Column(children: [
+                        _buildInputCol(
+                            "AREA PENUGASAN (SITE)",
+                            DropdownButtonFormField<String>(
                               isExpanded: true,
-                              initialValue: dropdownAreaValue, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                              items: assignableAreas.map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
+                              initialValue: dropdownAreaValue,
+                              icon: const Icon(Icons.keyboard_arrow_down,
+                                  color: AppColors.slate500),
+                              decoration: _inputDeco(""),
+                              items: assignableAreas
+                                  .map<DropdownMenuItem<String>>((e) =>
+                                      DropdownMenuItem<String>(
+                                          value: e,
+                                          child: Text(e,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis)))
+                                  .toList(),
                               onChanged: (v) {
                                 setState(() {
                                   _formArea = v!;
                                 });
                               },
-                            ))),
-                            const SizedBox(width: 16),
-                            Expanded(child: _buildInputCol("KATA SANDI BARU", TextField(textInputAction: TextInputAction.done, onSubmitted: (_) => _submitKaryawan(), controller: _passController, obscureText: true, decoration: _inputDeco("Kata Sandi Rahasia (Diperlukan untuk login)")))),
-                          ],
-                        )
-                      : _buildInputCol("AREA PENUGASAN (SITE)", DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: dropdownAreaValue, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco(""),
-                          items: assignableAreas.map<DropdownMenuItem<String>>((e) => DropdownMenuItem<String>(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (v) {
-                            setState(() {
-                              _formArea = v!;
-                            });
-                          },
-                        )),
+                            )),
+                        if (!_isEditing) ...[
+                          const SizedBox(height: 16),
+                          _buildInputCol(
+                              "MASUKKAN KATA SANDI",
+                              TextField(
+                                  textInputAction: TextInputAction.done,
+                                  onSubmitted: (_) => _submitKaryawan(),
+                                  controller: _passController,
+                                  obscureText: true,
+                                  decoration:
+                                      _inputDeco("Masukkan Kata Sandi"))),
+                        ]
+                      ])
+                    : (!_isEditing)
+                        ? Row(
+                            children: [
+                              Expanded(
+                                  child: _buildInputCol(
+                                      "AREA PENUGASAN (SITE)",
+                                      DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        initialValue: dropdownAreaValue,
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down,
+                                            color: AppColors.slate500),
+                                        decoration: _inputDeco(""),
+                                        items: assignableAreas
+                                            .map<DropdownMenuItem<String>>(
+                                                (e) => DropdownMenuItem<String>(
+                                                    value: e,
+                                                    child: Text(e,
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                        overflow: TextOverflow
+                                                            .ellipsis)))
+                                            .toList(),
+                                        onChanged: (v) {
+                                          setState(() {
+                                            _formArea = v!;
+                                          });
+                                        },
+                                      ))),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                  child: _buildInputCol(
+                                      "MASUKKAN KATA SANDI",
+                                      TextField(
+                                          textInputAction: TextInputAction.done,
+                                          onSubmitted: (_) => _submitKaryawan(),
+                                          controller: _passController,
+                                          obscureText: true,
+                                          decoration: _inputDeco(
+                                              "Masukkan Kata Sandi")))),
+                            ],
+                          )
+                        : _buildInputCol(
+                            "AREA PENUGASAN (SITE)",
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: dropdownAreaValue,
+                              icon: const Icon(Icons.keyboard_arrow_down,
+                                  color: AppColors.slate500),
+                              decoration: _inputDeco(""),
+                              items: assignableAreas
+                                  .map<DropdownMenuItem<String>>((e) =>
+                                      DropdownMenuItem<String>(
+                                          value: e,
+                                          child: Text(e,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis)))
+                                  .toList(),
+                              onChanged: (v) {
+                                setState(() {
+                                  _formArea = v!;
+                                });
+                              },
+                            )),
 
                 const SizedBox(height: 32),
                 if (_isEditing) ...[
@@ -2184,41 +2980,66 @@ class _KaryawanViewState extends State<KaryawanView> {
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.rose500,
-                        side: const BorderSide(color: AppColors.rose200, width: 2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        side: const BorderSide(
+                            color: AppColors.rose200, width: 2),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                       ),
                       onPressed: () async {
                         bool? confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (c) => AlertDialog(
-                            backgroundColor: Colors.white,
-                            title: const Text("Reset Foto Wajah", style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.slate800)),
-                            content: const Text("Anda yakin ingin menghapus foto profil dan mereset data wajah AI untuk karyawan ini?\nKaryawan akan diminta mengambil foto ulang saat login berikutnya."),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(c, false), child: const Text("Batal", style: TextStyle(color: AppColors.slate400, fontWeight: FontWeight.bold))),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: AppColors.rose500),
-                                onPressed: () => Navigator.pop(c, true),
-                                child: const Text("Ya, Reset Data AI", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
-                              )
-                            ],
-                          )
-                        );
+                            context: context,
+                            builder: (c) => AlertDialog(
+                                  backgroundColor: Colors.white,
+                                  title: const Text("Reset Foto Wajah",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.slate800)),
+                                  content: const Text(
+                                      "Anda yakin ingin menghapus foto profil dan mereset data wajah AI untuk karyawan ini?\nKaryawan akan diminta mengambil foto ulang saat login berikutnya."),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(c, false),
+                                        child: const Text("Batal",
+                                            style: TextStyle(
+                                                color: AppColors.slate400,
+                                                fontWeight: FontWeight.bold))),
+                                    ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.rose500),
+                                        onPressed: () => Navigator.pop(c, true),
+                                        child: const Text("Ya, Reset Data AI",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold)))
+                                  ],
+                                ));
                         if (confirm == true) {
                           setState(() => _isSubmitting = true);
-                          bool success = await ApiService.resetFace(_editDocId!);
+                          bool success =
+                              await ApiService.resetFace(_editDocId!);
                           if (mounted) setState(() => _isSubmitting = false);
                           if (success && mounted) {
-                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Data Wajah AI berhasil direset"), backgroundColor: AppColors.emerald500));
-                             _closeForm();
-                             _fetchData();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text("Data Wajah AI berhasil direset"),
+                                    backgroundColor: AppColors.emerald500));
+                            _closeForm();
+                            _fetchData();
                           } else if (mounted) {
-                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal mereset data wajah AI"), backgroundColor: AppColors.rose500));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text("Gagal mereset data wajah AI"),
+                                    backgroundColor: AppColors.rose500));
                           }
                         }
                       },
                       icon: const Icon(Icons.face_unlock_outlined, size: 18),
-                      label: const Text("HAPUS FOTO PROFIL & RESET AI WAJAH", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                      label: const Text("HAPUS FOTO PROFIL & RESET AI WAJAH",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w900, fontSize: 11)),
                     ),
                   ),
                   const SizedBox(height: 16),

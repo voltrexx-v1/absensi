@@ -639,11 +639,13 @@ class _LoginScreenState extends State<LoginScreen> {
       if (kIsWeb) {
         isDesktopDevice = MediaQuery.of(context).size.width >= 900;
       } else {
-        isDesktopDevice = Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+        isDesktopDevice =
+            Platform.isWindows || Platform.isMacOS || Platform.isLinux;
       }
 
       var loginResult = await ApiService.login(
-        id, pass,
+        id,
+        pass,
         mobileDeviceId: isDesktopDevice ? '' : _currentDeviceId,
         desktopDeviceId: isDesktopDevice ? _currentDeviceId : '',
       );
@@ -680,8 +682,8 @@ class _LoginScreenState extends State<LoginScreen> {
         user = apiUser;
         _directLogin(user);
       } else {
-        setState(
-            () => _errorMsg = loginResult['message']?.toString() ?? "NRP/ID tidak ditemukan atau password salah.");
+        setState(() => _errorMsg = loginResult['message']?.toString() ??
+            "NRP/ID tidak ditemukan atau password salah.");
       }
     } catch (e) {
       setState(() => _errorMsg = "Kesalahan koneksi jaringan.");
@@ -1733,7 +1735,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 13),
-                        decoration: _desktopInputDeco("Sandi Baru")))),
+                        decoration: _desktopInputDeco("Masukkan Kata Sandi")))),
             const SizedBox(width: 16),
             Expanded(
                 child: _buildDesktopInputBlock(

@@ -16,12 +16,14 @@ class SettingsView extends StatefulWidget {
   final UserModel user;
   final VoidCallback onLogout;
   final Function(String) onChangeView;
+  final VoidCallback onProfileUpdated;
 
   const SettingsView({
     super.key,
     required this.user,
     required this.onLogout,
     required this.onChangeView,
+    required this.onProfileUpdated,
   });
 
   @override
@@ -737,6 +739,7 @@ class _SettingsViewState extends State<SettingsView> {
               userId: widget.user.id,
               userRole: widget.user.role, 
               onBack: () => setState(() => _activeSetting = 'menu'),
+              onProfileUpdated: widget.onProfileUpdated,
             );
           }
         );
@@ -2066,6 +2069,7 @@ class _ProfileForm extends StatefulWidget {
   final String userId;
   final String userRole; // <-- Ditambahkan User Role 
   final VoidCallback onBack;
+  final VoidCallback onProfileUpdated;
 
   const _ProfileForm({
     required this.userData,
@@ -2073,6 +2077,7 @@ class _ProfileForm extends StatefulWidget {
     required this.userId,
     required this.userRole,
     required this.onBack,
+    required this.onProfileUpdated,
   });
 
   @override
@@ -2150,11 +2155,25 @@ class _ProfileFormState extends State<_ProfileForm> {
     if (!_availableAreas.contains(_area)) _area = _availableAreas.isNotEmpty ? _availableAreas.first : '';
 
     _departemen = widget.userData['departemen_id'] ?? '';
-    if (!_departemens.contains(_departemen)) _departemen = _departemens.isNotEmpty ? _departemens.first : '';
+    bool isKaryawan = widget.userRole == 'Karyawan';
+    
+    if (!_departemens.contains(_departemen)) {
+        if (!isKaryawan) {
+             _departemen = _departemens.isNotEmpty ? _departemens.first : '';
+        } else if (_departemen.isNotEmpty) {
+             _departemens.add(_departemen);
+        }
+    }
 
     _updateJabatanList(_departemen);
     _jabatan = widget.userData['jabatan'] ?? '';
-    if (!_jabatans.contains(_jabatan)) _jabatan = _jabatans.isNotEmpty ? _jabatans.first : '';
+    if (!_jabatans.contains(_jabatan)) {
+        if (!isKaryawan) {
+             _jabatan = _jabatans.isNotEmpty ? _jabatans.first : '';
+        } else if (_jabatan.isNotEmpty) {
+             _jabatans.add(_jabatan);
+        }
+    }
 
     _photoBase64 = widget.userData['photo_base64'];
   }
@@ -2185,10 +2204,10 @@ class _ProfileFormState extends State<_ProfileForm> {
       int currentCount = widget.userData['photo_change_count'] != null 
           ? int.tryParse(widget.userData['photo_change_count'].toString()) ?? 0 
           : 0;
-      if (widget.userRole == 'Karyawan' && currentCount >= 2) {
+      if (widget.userRole == 'Karyawan' && currentCount >= 3) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("⛔ Foto profil sudah dikunci (batas 2x). Hubungi Admin untuk reset."),
+            content: Text("⛔ Foto profil sudah dikunci (batas 3x). Hubungi Admin untuk reset."),
             backgroundColor: AppColors.rose500
           ));
         }
@@ -2287,16 +2306,17 @@ class _ProfileFormState extends State<_ProfileForm> {
            int currentCount = widget.userData['photo_change_count'] != null ? int.tryParse(widget.userData['photo_change_count'].toString()) ?? 0 : 0;
            widget.userData['photo_change_count'] = currentCount + 1;
          });
+         widget.onProfileUpdated();
          if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-             content: Text("âœ… Wajah berhasil dipindai dan didaftarkan ke sistem AI."),
+             content: Text("✅ Wajah berhasil dipindai dan didaftarkan ke sistem AI."),
              backgroundColor: AppColors.emerald500
            ));
          }
       } else {
          if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-             content: Text("âŒ Gagal mendaftarkan wajah: ${response['message']}"),
+             content: Text("❌ Gagal mendaftarkan wajah: ${response['message']}"),
              backgroundColor: AppColors.rose500
            ));
          }
@@ -2364,6 +2384,7 @@ class _ProfileFormState extends State<_ProfileForm> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profil Berhasil Diperbarui!"), backgroundColor: AppColors.emerald500));
+        widget.onProfileUpdated();
         setState(() => _isEditMode = false); // Mengunci form kembali
       }
     } catch (e) {
@@ -2384,9 +2405,9 @@ class _ProfileFormState extends State<_ProfileForm> {
 
     // LOGIKA KUNCI DATA UNTUK KARYAWAN BIASA
     bool isKaryawan = widget.userRole == 'Karyawan';
-    // Foto dikunci jika usernya karyawan DAN sudah mengganti foto >= 2 kali
+    // Foto dikunci jika usernya karyawan DAN sudah mengganti foto >= 3 kali
     int changeCount = widget.userData['photo_change_count'] != null ? int.tryParse(widget.userData['photo_change_count'].toString()) ?? 0 : 0;
-    bool isPhotoLocked = isKaryawan && (changeCount >= 2);
+    bool isPhotoLocked = isKaryawan && (changeCount >= 3);
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(isMobile ? 16 : 32),
@@ -2457,7 +2478,7 @@ class _ProfileFormState extends State<_ProfileForm> {
                  children: [
                    const Icon(Icons.lock_outline, color: AppColors.blue500),
                    const SizedBox(width: 12),
-                   const Expanded(child: Text("INFO: Foto Profil, Departemen, dan Jabatan telah dikunci oleh sistem. Hubungi HR / Admin jika Anda ingin melakukan perubahan pada data tersebut.", style: TextStyle(color: AppColors.blue500, fontWeight: FontWeight.bold, fontSize: 11))),
+                   Expanded(child: Text(isPhotoLocked ? "INFO: Foto Profil (Wajah), Departemen, dan Jabatan telah dikunci oleh sistem. Hubungi HR / Admin jika Anda ingin mereset perubahan." : "INFO: Departemen dan Jabatan telah ditetapkan oleh sistem. Hubungi HR / Admin jika Anda memiliki kendala data.", style: const TextStyle(color: AppColors.blue500, fontWeight: FontWeight.bold, fontSize: 11))),
                  ],
                )
              ),
@@ -2499,7 +2520,7 @@ class _ProfileFormState extends State<_ProfileForm> {
                 const SizedBox(height: 12),
                 Center(child: Text(
                   _isEditMode && !isPhotoLocked 
-                    ? "📸 Pilih / Ambil Foto Wajah\n(Sisa ganti foto: ${2 - (widget.userData['photo_change_count'] != null ? int.tryParse(widget.userData['photo_change_count'].toString()) ?? 0 : 0)}x)" 
+                    ? "📸 Pilih / Ambil Foto Wajah\n(Sisa ganti foto: ${3 - changeCount}x)" 
                     : "Foto Profil (Wajah) Terkunci (Hubungi Admin)", 
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.slate400, letterSpacing: 1, height: 1.5)
@@ -2627,36 +2648,44 @@ class _ProfileFormState extends State<_ProfileForm> {
                      ],
                    ),
                 const SizedBox(height: 16),
-
+                
                 isMobile
                  ? Column(
                      children: [
-                       _buildInputCol("DEPARTEMEN / DIVISI", DropdownButtonFormField<String>(
-                          isExpanded: true, initialValue: _departemen, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco("", isLocked: isKaryawan),
-                          items: _departemens.map((e) => DropdownMenuItem(value: e, child: Text(e, style: _textStyle(isLocked: isKaryawan), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (_isEditMode && !isKaryawan) ? (v) { setState(() { _departemen = v!; _updateJabatanList(v); }); } : null,
-                       )),
+                       _buildInputCol("DEPARTEMEN / DIVISI", isKaryawan 
+                         ? TextField(controller: TextEditingController(text: _departemen), enabled: false, style: _textStyle(isLocked: true), decoration: _inputDeco("", isLocked: true))
+                         : DropdownButtonFormField<String>(
+                            isExpanded: true, initialValue: _departemen, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco("", isLocked: isKaryawan),
+                            items: _departemens.map((e) => DropdownMenuItem(value: e, child: Text(e, style: _textStyle(isLocked: isKaryawan), overflow: TextOverflow.ellipsis))).toList(),
+                            onChanged: (_isEditMode && !isKaryawan) ? (v) { setState(() { _departemen = v!; _updateJabatanList(v); }); } : null,
+                         )),
                        const SizedBox(height: 16),
-                       _buildInputCol("JABATAN / POSISI", DropdownButtonFormField<String>(
-                          isExpanded: true, initialValue: _jabatan, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco("", isLocked: isKaryawan),
-                          items: _jabatans.map((e) => DropdownMenuItem(value: e, child: Text(e, style: _textStyle(isLocked: isKaryawan), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (_isEditMode && !isKaryawan) ? (v) => setState(() => _jabatan = v!) : null,
-                       )),
+                       _buildInputCol("JABATAN / POSISI", isKaryawan 
+                         ? TextField(controller: TextEditingController(text: _jabatan), enabled: false, style: _textStyle(isLocked: true), decoration: _inputDeco("", isLocked: true))
+                         : DropdownButtonFormField<String>(
+                            isExpanded: true, initialValue: _jabatan, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco("", isLocked: isKaryawan),
+                            items: _jabatans.map((e) => DropdownMenuItem(value: e, child: Text(e, style: _textStyle(isLocked: isKaryawan), overflow: TextOverflow.ellipsis))).toList(),
+                            onChanged: (_isEditMode && !isKaryawan) ? (v) => setState(() => _jabatan = v!) : null,
+                         )),
                      ]
                    )
                  : Row(
                      children: [
-                       Expanded(child: _buildInputCol("DEPARTEMEN / DIVISI", DropdownButtonFormField<String>(
-                          isExpanded: true, initialValue: _departemen, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco("", isLocked: isKaryawan),
-                          items: _departemens.map((e) => DropdownMenuItem(value: e, child: Text(e, style: _textStyle(isLocked: isKaryawan), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (_isEditMode && !isKaryawan) ? (v) { setState(() { _departemen = v!; _updateJabatanList(v); }); } : null,
-                       ))),
+                       Expanded(child: _buildInputCol("DEPARTEMEN / DIVISI", isKaryawan 
+                         ? TextField(controller: TextEditingController(text: _departemen), enabled: false, style: _textStyle(isLocked: true), decoration: _inputDeco("", isLocked: true))
+                         : DropdownButtonFormField<String>(
+                            isExpanded: true, initialValue: _departemen, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco("", isLocked: isKaryawan),
+                            items: _departemens.map((e) => DropdownMenuItem(value: e, child: Text(e, style: _textStyle(isLocked: isKaryawan), overflow: TextOverflow.ellipsis))).toList(),
+                            onChanged: (_isEditMode && !isKaryawan) ? (v) { setState(() { _departemen = v!; _updateJabatanList(v); }); } : null,
+                         ))),
                        const SizedBox(width: 16),
-                       Expanded(child: _buildInputCol("JABATAN / POSISI", DropdownButtonFormField<String>(
-                          isExpanded: true, initialValue: _jabatan, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco("", isLocked: isKaryawan),
-                          items: _jabatans.map((e) => DropdownMenuItem(value: e, child: Text(e, style: _textStyle(isLocked: isKaryawan), overflow: TextOverflow.ellipsis))).toList(),
-                          onChanged: (_isEditMode && !isKaryawan) ? (v) => setState(() => _jabatan = v!) : null,
-                       ))),
+                       Expanded(child: _buildInputCol("JABATAN / POSISI", isKaryawan 
+                         ? TextField(controller: TextEditingController(text: _jabatan), enabled: false, style: _textStyle(isLocked: true), decoration: _inputDeco("", isLocked: true))
+                         : DropdownButtonFormField<String>(
+                            isExpanded: true, initialValue: _jabatan, icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.slate500), decoration: _inputDeco("", isLocked: isKaryawan),
+                            items: _jabatans.map((e) => DropdownMenuItem(value: e, child: Text(e, style: _textStyle(isLocked: isKaryawan), overflow: TextOverflow.ellipsis))).toList(),
+                            onChanged: (_isEditMode && !isKaryawan) ? (v) => setState(() => _jabatan = v!) : null,
+                         ))),
                      ],
                    ),
                 const SizedBox(height: 16),

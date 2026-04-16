@@ -99,7 +99,12 @@ class UserController extends Controller
     public function resetFace($id)
     {
         $user = User::findOrFail($id);
-        $user->update(['face_encoding' => null, 'photo_base64' => null, 'face_image_path' => null]);
+        $user->update([
+            'face_encoding' => null, 
+            'photo_base64' => null, 
+            'face_image_path' => null,
+            'photo_change_count' => 0
+        ]);
         return response()->json(['message' => 'Face data direset', 'data' => $user->fresh()]);
     }
 
