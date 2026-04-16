@@ -47,6 +47,7 @@ class _KaryawanViewState extends State<KaryawanView> {
 
   // Variabel untuk Form Tambah/Edit Karyawan
   bool _showForm = false;
+  bool _isPassObscure = true;
   bool _isSubmitting = false;
   bool _isEditing = false;
   String? _editDocId;
@@ -124,6 +125,7 @@ class _KaryawanViewState extends State<KaryawanView> {
       _kontakController.clear();
       _alamatController.clear();
       _passController.clear();
+      _isPassObscure = true;
       _formTanggalLahir = null;
       _formJenisKelamin = 'Laki-laki';
       _formAgama = 'Islam';
@@ -2899,9 +2901,19 @@ class _KaryawanViewState extends State<KaryawanView> {
                                   textInputAction: TextInputAction.done,
                                   onSubmitted: (_) => _submitKaryawan(),
                                   controller: _passController,
-                                  obscureText: true,
-                                  decoration:
-                                      _inputDeco("Masukkan Kata Sandi"))),
+                                  obscureText: _isPassObscure,
+                                  decoration: _inputDeco("Masukkan Kata Sandi")
+                                      .copyWith(
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                          _isPassObscure
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                          color: AppColors.slate400),
+                                      onPressed: () => setState(() =>
+                                          _isPassObscure = !_isPassObscure),
+                                    ),
+                                  ))),
                         ]
                       ])
                     : (!_isEditing)
@@ -2943,9 +2955,21 @@ class _KaryawanViewState extends State<KaryawanView> {
                                           textInputAction: TextInputAction.done,
                                           onSubmitted: (_) => _submitKaryawan(),
                                           controller: _passController,
-                                          obscureText: true,
-                                          decoration: _inputDeco(
-                                              "Masukkan Kata Sandi")))),
+                                          obscureText: _isPassObscure,
+                                          decoration:
+                                              _inputDeco("Masukkan Kata Sandi")
+                                                  .copyWith(
+                                            suffixIcon: IconButton(
+                                              icon: Icon(
+                                                  _isPassObscure
+                                                      ? Icons.visibility_off
+                                                      : Icons.visibility,
+                                                  color: AppColors.slate400),
+                                              onPressed: () => setState(() =>
+                                                  _isPassObscure =
+                                                      !_isPassObscure),
+                                            ),
+                                          )))),
                             ],
                           )
                         : _buildInputCol(
